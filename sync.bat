@@ -1,10 +1,10 @@
 @echo off
-title GarageOS Sync v1.0
+title GarageOS Sync v1.1
 color 0A
 
 echo.
 echo ==========================================================
-echo                    GarageOS Sync v1.0
+echo                    GarageOS Sync v1.1
 echo ==========================================================
 echo.
 
@@ -20,12 +20,18 @@ cd
 echo.
 
 REM ----------------------------------------------------------
-REM STEP 1 - Pull latest Apps Script
+REM STEP 1 - Synchronize Apps Script
 REM ----------------------------------------------------------
 
-echo [1/5] Pulling latest Apps Script...
+echo [1/5] Synchronizing Apps Script...
+
 cd appscript
 
+REM Remove previous Apps Script files
+del /Q *.js 2>nul
+del /Q *.json 2>nul
+
+REM Download latest Apps Script project
 call clasp pull
 
 if errorlevel 1 (
@@ -66,7 +72,7 @@ REM ----------------------------------------------------------
 REM STEP 3 - Commit message
 REM ----------------------------------------------------------
 
-set /p MESSAGE=Commit message (Enter = Update GarageOS): 
+set /p MESSAGE=Commit message (Enter = Update GarageOS):
 
 if "%MESSAGE%"=="" (
     set MESSAGE=Update GarageOS
