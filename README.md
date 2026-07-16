@@ -1,4 +1,4 @@
-\# 🚗 GarageOS
+\# GarageOS
 
 
 
@@ -340,3 +340,12 @@ Data Management Systems
 
 \---
 
+=======
+# GarageOS
+
+GarageOS is a modular automotive workshop management system built with Google Sheets and Google Apps Script.
+
+## Status
+
+🚧 Under active development.
+>>>>>>> 54b6e1b7200d678a589f9d1c812451da1615e697
