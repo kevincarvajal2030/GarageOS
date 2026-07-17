@@ -169,153 +169,125 @@ function validateTextField(value, fieldName, options = {}) {
 }
 
 
+/******************************************************************************
+ * NUMBER VALIDATION
+ ******************************************************************************/
+
 /**
- * Validates a value against a regular expression.
+ * Validates that a value is a valid number.
  *
- * @param {string} value Value to validate.
- * @param {string} fieldName Display name.
- * @param {RegExp} pattern Regular expression.
- * @param {string} errorMessage Custom validation message.
+ * @param {*} value Value to validate.
+ * @param {string} fieldName Display name of the field.
  */
-function validatePattern(
-  value,
-  fieldName,
-  pattern,
-  errorMessage
-) {
+function validateNumberField(value, fieldName) {
 
-  if (isEmpty(value)) {
-    return;
+  validateRequiredField(value, fieldName);
+
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    throwValidationError(`${fieldName} must be a valid number.`);
   }
 
-  validateTextField(value, fieldName);
+}
 
-  if (!pattern.test(value.trim())) {
-    throwValidationError(errorMessage);
+
+/**
+ * Validates that a number is greater than zero.
+ *
+ * @param {number} value Value to validate.
+ * @param {string} fieldName Display name of the field.
+ */
+function validatePositiveNumberField(value, fieldName) {
+
+  validateNumberField(value, fieldName);
+
+  if (value <= 0) {
+    throwValidationError(`${fieldName} must be greater than zero.`);
   }
 
+}
 
 
-  /******************************************************************************
-   * NUMBER VALIDATION
-   ******************************************************************************/
+/******************************************************************************
+ * BOOLEAN VALIDATION
+ ******************************************************************************/
 
-  /**
-   * Validates that a value is a valid number.
-   *
-   * @param {*} value Value to validate.
-   * @param {string} fieldName Display name of the field.
-   */
-  function validateNumberField(value, fieldName) {
+/**
+ * Validates that a value is a boolean.
+ *
+ * @param {*} value Value to validate.
+ * @param {string} fieldName Display name of the field.
+ */
+function validateBooleanField(value, fieldName) {
 
-    validateRequiredField(value, fieldName);
+  validateRequiredField(value, fieldName);
 
-    if (typeof value !== "number" || Number.isNaN(value)) {
-      throwValidationError(`${fieldName} must be a valid number.`);
-    }
-
+  if (typeof value !== "boolean") {
+    throwValidationError(`${fieldName} must be true or false.`);
   }
 
+}
 
-  /**
-   * Validates that a number is greater than zero.
-   *
-   * @param {number} value Value to validate.
-   * @param {string} fieldName Display name of the field.
-   */
-  function validatePositiveNumberField(value, fieldName) {
 
-    validateNumberField(value, fieldName);
+/******************************************************************************
+ * DATE VALIDATION
+ ******************************************************************************/
 
-    if (value <= 0) {
-      throwValidationError(`${fieldName} must be greater than zero.`);
-    }
+/**
+ * Validates that a value is a valid Date object.
+ *
+ * @param {*} value Value to validate.
+ * @param {string} fieldName Display name of the field.
+ */
+function validateDateField(value, fieldName) {
 
+  validateRequiredField(value, fieldName);
+
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    throwValidationError(`${fieldName} must be a valid date.`);
   }
 
+}
 
-  /******************************************************************************
-   * BOOLEAN VALIDATION
-   ******************************************************************************/
 
-  /**
-   * Validates that a value is a boolean.
-   *
-   * @param {*} value Value to validate.
-   * @param {string} fieldName Display name of the field.
-   */
-  function validateBooleanField(value, fieldName) {
+/******************************************************************************
+ * COLLECTION VALIDATION
+ ******************************************************************************/
 
-    validateRequiredField(value, fieldName);
+/**
+ * Validates that a value is an array.
+ *
+ * @param {*} value Value to validate.
+ * @param {string} fieldName Display name of the field.
+ */
+function validateArrayField(value, fieldName) {
 
-    if (typeof value !== "boolean") {
-      throwValidationError(`${fieldName} must be true or false.`);
-    }
+  validateRequiredField(value, fieldName);
 
+  if (!Array.isArray(value)) {
+    throwValidationError(`${fieldName} must be an array.`);
   }
 
+}
 
-  /******************************************************************************
-   * DATE VALIDATION
-   ******************************************************************************/
 
-  /**
-   * Validates that a value is a valid Date object.
-   *
-   * @param {*} value Value to validate.
-   * @param {string} fieldName Display name of the field.
-   */
-  function validateDateField(value, fieldName) {
+/**
+ * Validates that a value is an object.
+ *
+ * @param {*} value Value to validate.
+ * @param {string} fieldName Display name of the field.
+ */
+function validateObjectField(value, fieldName) {
 
-    validateRequiredField(value, fieldName);
+  validateRequiredField(value, fieldName);
 
-    if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
-      throwValidationError(`${fieldName} must be a valid date.`);
-    }
-
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) {
+    throwValidationError(`${fieldName} must be an object.`);
   }
 
-
-  /******************************************************************************
-   * COLLECTION VALIDATION
-   ******************************************************************************/
-
-  /**
-   * Validates that a value is an array.
-   *
-   * @param {*} value Value to validate.
-   * @param {string} fieldName Display name of the field.
-   */
-  function validateArrayField(value, fieldName) {
-
-    validateRequiredField(value, fieldName);
-
-    if (!Array.isArray(value)) {
-      throwValidationError(`${fieldName} must be an array.`);
-    }
-
-  }
-
-
-  /**
-   * Validates that a value is an object.
-   *
-   * @param {*} value Value to validate.
-   * @param {string} fieldName Display name of the field.
-   */
-  function validateObjectField(value, fieldName) {
-
-    validateRequiredField(value, fieldName);
-
-    if (
-      typeof value !== "object" ||
-      value === null ||
-      Array.isArray(value)
-    ) {
-      throwValidationError(`${fieldName} must be an object.`);
-    }
-
-  }
 }
 
 /******************************************************************************
@@ -373,69 +345,6 @@ function validatePhoneField(value, fieldName) {
 
 }
 
-
-/******************************************************************************
- * VEHICLE VALIDATION
- ******************************************************************************/
-
-/**
- * Validates a vehicle VIN.
- *
- * Standard VIN length is 17 characters.
- *
- * @param {*} value Value to validate.
- * @param {string} fieldName Display name of the field.
- */
-function validateVehicleVin(value, fieldName) {
-
-  validateRequiredField(value, fieldName);
-  validateTextField(value, fieldName);
-
-  const vin = value.trim().toUpperCase();
-
-  if (vin.length !== 17) {
-    throwValidationError(`${fieldName} must contain exactly 17 characters.`);
-  }
-
-}
-
-
-/**
- * Validates a vehicle license plate.
- *
- * Only checks that a value exists.
- * Country-specific validation rules can be added later.
- *
- * @param {*} value Value to validate.
- * @param {string} fieldName Display name of the field.
- */
-function validateLicensePlate(value, fieldName) {
-
-  validateRequiredField(value, fieldName);
-  validateTextField(value, fieldName);
-
-}
-
-
-/**
- * Validates a vehicle manufacturing year.
- *
- * @param {*} value Value to validate.
- * @param {string} fieldName Display name of the field.
- */
-function validateVehicleYear(value, fieldName) {
-
-  validateNumberField(value, fieldName);
-
-  const currentYear = new Date().getFullYear() + 1;
-
-  if (value < 1900 || value > currentYear) {
-    throwValidationError(
-      `${fieldName} must be between 1900 and ${currentYear}.`
-    );
-  }
-
-}
 
 /******************************************************************************
  * VALUE VALIDATION
