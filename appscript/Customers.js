@@ -25,13 +25,21 @@
  * CUSTOMER CRUD
  ******************************************************************************/
 
-
 /**
  * Creates a new customer.
  *
- * @param {Object} customerData Customer information.
+ * @param {Object} customerData
  */
 function createCustomer(customerData) {
+
+  validateCustomerData(customerData);
+
+  const record = buildCustomerRecord(customerData);
+
+  appendRecord(
+    SHEETS.CUSTOMERS,
+    record
+  );
 
 }
 
@@ -39,10 +47,47 @@ function createCustomer(customerData) {
 /**
  * Updates an existing customer.
  *
- * @param {string} customerId Customer ID.
- * @param {Object} customerData Updated customer information.
+ * @param {string} customerId
+ * @param {Object} customerData
  */
 function updateCustomer(customerId, customerData) {
+
+  validateCustomerData(customerData);
+
+  const existingRecord = getRecord(
+    SHEETS.CUSTOMERS,
+    customerId
+  );
+
+  if (!existingRecord) {
+
+    throw new Error("Customer not found.");
+
+  }
+
+  const updatedRecord = [
+
+    customerId,
+
+    customerData.firstName.trim(),
+
+    customerData.lastName.trim(),
+
+    customerData.phone.trim(),
+
+    customerData.email.trim(),
+
+    customerData.address || "",
+
+    existingRecord[6]
+
+  ];
+
+  updateRecord(
+    SHEETS.CUSTOMERS,
+    customerId,
+    updatedRecord
+  );
 
 }
 
@@ -50,9 +95,74 @@ function updateCustomer(customerId, customerData) {
 /**
  * Deletes a customer.
  *
- * @param {string} customerId Customer ID.
+ * @param {string} customerId
  */
 function deleteCustomer(customerId) {
+
+  deleteRecord(
+    SHEETS.CUSTOMERS,
+    customerId
+  );
+
+}
+
+
+/******************************************************************************
+ * CUSTOMER QUERIES
+ ******************************************************************************/
+
+/**
+ * Returns a customer by ID.
+ *
+ * @param {string} customerId
+ * @returns {Object|null}
+ */
+function getCustomerById(customerId) {
+
+  const record = getRecord(
+    SHEETS.CUSTOMERS,
+    customerId
+  );
+
+  if (!record) {
+
+    return null;
+
+  }
+
+  return {
+
+    id: record[0],
+
+    firstName: record[1],
+
+    lastName: record[2],
+
+    phone: record[3],
+
+    email: record[4],
+
+    address: record[5],
+
+    createdAt: record[6]
+
+  };
+
+}
+
+
+/**
+ * Determines whether a customer exists.
+ *
+ * @param {string} customerId
+ * @returns {boolean}
+ */
+function customerExists(customerId) {
+
+  return recordExists(
+    SHEETS.CUSTOMERS,
+    customerId
+  );
 
 }
 
@@ -61,13 +171,53 @@ function deleteCustomer(customerId) {
  * CUSTOMER VALIDATION
  ******************************************************************************/
 
-
 /**
  * Validates all customer information before saving.
  *
- * @param {Object} customerData Customer information.
+ * @param {Object} customerData
  */
 function validateCustomerData(customerData) {
+
+  validateObjectField(customerData, "Customer");
+
+  validateTextField(
+    customerData.firstName,
+    "First Name",
+    {
+      required: true,
+      minimumLength: 2,
+      maximumLength: 50
+    }
+  );
+
+  validateTextField(
+    customerData.lastName,
+    "Last Name",
+    {
+      required: true,
+      minimumLength: 2,
+      maximumLength: 50
+    }
+  );
+
+  validatePhoneField(
+    customerData.phone,
+    "Phone"
+  );
+
+  validateEmailField(
+    customerData.email,
+    "Email"
+  );
+
+  validateTextField(
+    customerData.address,
+    "Address",
+    {
+      required: false,
+      maximumLength: 200
+    }
+  );
 
 }
 
@@ -76,13 +226,30 @@ function validateCustomerData(customerData) {
  * CUSTOMER RECORD
  ******************************************************************************/
 
-
 /**
  * Builds a customer record ready to be written into the database.
  *
- * @param {Object} customerData Customer information.
+ * @param {Object} customerData
  * @returns {Array}
  */
 function buildCustomerRecord(customerData) {
+
+  return [
+
+    generateCustomerID(),
+
+    customerData.firstName.trim(),
+
+    customerData.lastName.trim(),
+
+    customerData.phone.trim(),
+
+    customerData.email.trim(),
+
+    customerData.address || "",
+
+    getTimestamp()
+
+  ];
 
 }

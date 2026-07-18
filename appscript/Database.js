@@ -98,4 +98,136 @@ function clearTable(sheetName) {
 
 }
 
+/**
+ * Returns the spreadsheet row that matches an ID.
+ *
+ * @param {string} sheetName
+ * @param {string} id
+ * @returns {number}
+ */
+function findRowById(sheetName, id) {
 
+  const data = getData(sheetName);
+
+  for (let row = TABLE.FIRST_DATA_ROW - 1; row < data.length; row++) {
+
+    if (data[row][0] === id) {
+
+      return row + 1;
+
+    }
+
+  }
+
+  return -1;
+
+}
+
+/**
+ * Determines whether a record exists.
+ *
+ * @param {string} sheetName
+ * @param {string} id
+ * @returns {boolean}
+ */
+function recordExists(sheetName, id) {
+
+  return findRowById(sheetName, id) !== -1;
+
+}
+
+
+/**
+ * Returns an entire spreadsheet row.
+ *
+ * @param {string} sheetName
+ * @param {string} id
+ * @returns {Array|null}
+ */
+function getRecord(sheetName, id) {
+
+  const row = findRowById(sheetName, id);
+
+  if (row === -1) {
+
+    return null;
+
+  }
+
+  return getSheet(sheetName)
+    .getRange(
+      row,
+      1,
+      1,
+      getLastColumn(sheetName)
+    )
+    .getValues()[0];
+
+}
+
+
+/**
+ * Replaces a complete record.
+ *
+ * @param {string} sheetName
+ * @param {string} id
+ * @param {Array} record
+ */
+function updateRecord(sheetName, id, record) {
+
+  const row = findRowById(sheetName, id);
+
+  if (row === -1) {
+
+    throw new Error("Record not found.");
+
+  }
+
+  getSheet(sheetName)
+    .getRange(
+      row,
+      1,
+      1,
+      record.length
+    )
+    .setValues([record]);
+
+}
+
+
+/**
+ * Deletes a record.
+ *
+ * @param {string} sheetName
+ * @param {string} id
+ */
+function deleteRecord(sheetName, id) {
+
+  const row = findRowById(sheetName, id);
+
+  if (row === -1) {
+
+    throw new Error("Record not found.");
+
+  }
+
+  getSheet(sheetName)
+    .deleteRow(row);
+
+}
+
+
+/**
+ * Appends a complete record.
+ *
+ * @param {string} sheetName
+ * @param {Array} record
+ */
+function appendRecord(sheetName, record) {
+
+  appendRow(
+    sheetName,
+    record
+  );
+
+}
