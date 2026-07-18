@@ -1,150 +1,1202 @@
-CustomerForm.html (Starter)
+<!DOCTYPE html>
+<html>
 
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <base target="_top">
-      <meta charset="UTF-8">
+<head>
 
-      <style>
-        body{
-          font-family:Arial,sans-serif;
-          padding:20px;
-          background:#fff;
-        }
+  <base target="_top">
+  <meta charset="UTF-8">
 
-        h2{
-          margin-top:0;
-        }
+  <title>GarageOS - Customer</title>
 
-        .form-group{
-          margin-bottom:12px;
-        }
+  <style>
 
-        label{
-          display:block;
-          font-weight:bold;
-          margin-bottom:4px;
-        }
+    /* ==========================================================
+       GARAGE OS UI FRAMEWORK
+       Customer Form v2
+       This stylesheet will become the base for every module:
+       - Customers
+       - Vehicles
+       - Suppliers
+       - Mechanics
+       - Work Orders
+       ========================================================== */
 
-        input, textarea{
-          width:100%;
-          box-sizing:border-box;
-          padding:8px;
-        }
+    :root{
 
-        textarea{
-          resize:vertical;
-          min-height:70px;
-        }
+      --primary:#1E88E5;
+      --primaryHover:#1565C0;
 
-        .buttons{
-          margin-top:20px;
-          display:flex;
-          justify-content:flex-end;
-          gap:10px;
-        }
-      </style>
-    </head>
+      --success:#43A047;
+      --danger:#E53935;
+      --warning:#FB8C00;
 
-    <body>
+      --border:#D9D9D9;
 
-    <h2 id="title">New Customer</h2>
+      --background:#F4F6F9;
 
-    <form id="customerForm">
+      --card:#FFFFFF;
 
-    <input type="hidden" id="mode" value="<?= options.mode ?>">
-    <input type="hidden" id="customerId" value="<?= options.customerId ?>">
+      --text:#333333;
 
-    <div class="form-group">
-    <label>First Name *</label>
-    <input id="firstName" required>
+      --subtitle:#757575;
+
+      --radius:8px;
+
+      --shadow:
+      0 2px 8px rgba(0,0,0,.08);
+
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    html,
+    body{
+
+      width:100%;
+      height:100%;
+
+      background:var(--background);
+
+      font-family:
+      Arial,
+      Helvetica,
+      sans-serif;
+
+      color:var(--text);
+
+    }
+
+    body{
+
+      padding:24px;
+
+    }
+
+    .container{
+
+      background:var(--card);
+
+      border-radius:var(--radius);
+
+      box-shadow:var(--shadow);
+
+      overflow:hidden;
+
+    }
+
+    /*=====================================================
+
+      HEADER
+
+    =====================================================*/
+
+    .header{
+
+      background:var(--primary);
+
+      color:white;
+
+      padding:18px 24px;
+
+    }
+
+    .header h2{
+
+      font-size:22px;
+
+      font-weight:600;
+
+    }
+
+    .header p{
+
+      margin-top:6px;
+
+      font-size:13px;
+
+      opacity:.85;
+
+    }
+
+    /*=====================================================
+
+      BODY
+
+    =====================================================*/
+
+    .content{
+
+      padding:24px;
+
+    }
+
+    /*=====================================================
+
+      GRID
+
+    =====================================================*/
+
+    .grid{
+
+      display:grid;
+
+      grid-template-columns:
+
+      1fr 1fr;
+
+      gap:18px;
+
+    }
+
+    .full{
+
+      grid-column:1 / -1;
+
+    }
+
+    /*=====================================================
+
+      FORM GROUP
+
+    =====================================================*/
+
+    .form-group{
+
+      display:flex;
+
+      flex-direction:column;
+
+    }
+
+    .form-group label{
+
+      margin-bottom:6px;
+
+      font-size:13px;
+
+      font-weight:bold;
+
+      color:#555;
+
+    }
+
+    input,
+    select,
+    textarea{
+
+      width:100%;
+
+      padding:10px 12px;
+
+      border:
+
+      1px solid var(--border);
+
+      border-radius:6px;
+
+      outline:none;
+
+      font-size:14px;
+
+      transition:.20s;
+
+      background:white;
+
+    }
+
+    textarea{
+
+      resize:vertical;
+
+      min-height:90px;
+
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+
+      border-color:
+
+      var(--primary);
+
+      box-shadow:
+
+      0 0 0 3px
+
+      rgba(30,136,229,.15);
+
+    }
+
+    input.error,
+    select.error,
+    textarea.error{
+
+      border-color:
+
+      var(--danger);
+
+      background:#FFF5F5;
+
+    }
+
+    .required{
+
+      color:
+
+      var(--danger);
+
+      margin-left:2px;
+
+    }
+
+    /*=====================================================
+
+      SECTION TITLE
+
+    =====================================================*/
+
+    .section{
+
+      margin-top:10px;
+
+      margin-bottom:18px;
+
+      font-size:15px;
+
+      font-weight:bold;
+
+      color:#444;
+
+      border-bottom:
+
+      1px solid #ECECEC;
+
+      padding-bottom:8px;
+
+    }
+
+    /*=====================================================
+
+      FOOTER
+
+    =====================================================*/
+
+    .footer{
+
+      display:flex;
+
+      justify-content:flex-end;
+
+      gap:10px;
+
+      padding:18px 24px;
+
+      background:#FAFAFA;
+
+      border-top:
+
+      1px solid #EEEEEE;
+
+    }
+
+    button{
+
+      border:none;
+
+      cursor:pointer;
+
+      border-radius:6px;
+
+      padding:
+
+      11px 18px;
+
+      font-size:14px;
+
+      transition:.2s;
+
+    }
+
+    .btnCancel{
+
+      background:#E0E0E0;
+
+    }
+
+    .btnCancel:hover{
+
+      background:#D5D5D5;
+
+    }
+
+    .btnSave{
+
+      background:
+
+      var(--primary);
+
+      color:white;
+
+    }
+
+    .btnSave:hover{
+
+      background:
+
+      var(--primaryHover);
+
+    }
+
+    .btnSave:disabled{
+
+      opacity:.6;
+
+      cursor:not-allowed;
+
+    }
+
+    /*=====================================================
+
+      LOADER
+
+    =====================================================*/
+
+    .loader{
+
+      display:none;
+
+      margin-top:18px;
+
+      text-align:center;
+
+      color:#666;
+
+      font-size:13px;
+
+    }
+
+    .loader.show{
+
+      display:block;
+
+    }
+
+    /*=====================================================
+
+      RESPONSIVE
+
+    =====================================================*/
+
+    @media(max-width:760px){
+
+      .grid{
+
+        grid-template-columns:1fr;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<h2 id="title">
+
+New Customer
+
+</h2>
+
+<p>
+
+GarageOS Customer Management
+
+</p>
+
+</div>
+
+<div class="content">
+
+<form id="customerForm">
+
+<input
+type="hidden"
+id="mode"
+value="<?= options.mode ?>">
+
+<input
+type="hidden"
+id="customerId"
+value="<?= options.customerId ?>">
+
+<div class="section">
+
+General Information
+
+</div>
+
+<div class="grid">
+
+<div class="form-group">
+
+<label>
+
+First Name
+
+<span class="required">*</span>
+
+</label>
+
+<input
+id="firstName"
+type="text"
+maxlength="60"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Last Name
+
+<span class="required">*</span>
+
+</label>
+
+<input
+id="lastName"
+type="text"
+maxlength="60"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Phone
+
+<span class="required">*</span>
+
+</label>
+
+<input
+id="phone"
+type="tel"
+maxlength="25"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>
+
+Email
+
+</label>
+
+<input
+id="email"
+type="email"
+maxlength="120">
+
+</div>
+
+
+      <div class="form-group">
+
+        <label>
+
+          Address
+
+        </label>
+
+        <textarea
+          id="address"
+          maxlength="250"></textarea>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+
+          City
+
+        </label>
+
+        <input
+          id="city"
+          type="text"
+          maxlength="60">
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+
+          State
+
+        </label>
+
+        <select id="state">
+
+          <option value="">
+            Loading...
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+
+          ZIP Code
+
+        </label>
+
+        <input
+          id="zipCode"
+          type="text"
+          maxlength="15">
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+
+          Preferred Contact
+
+        </label>
+
+        <select id="preferredContact">
+
+          <option value="">
+            Loading...
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+
+          Status
+
+        </label>
+
+        <select id="status">
+
+          <option value="">
+            Loading...
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group full">
+
+        <label>
+
+          Notes
+
+        </label>
+
+        <textarea
+          id="notes"
+          maxlength="1000"></textarea>
+
+      </div>
+
     </div>
 
-    <div class="form-group">
-    <label>Last Name *</label>
-    <input id="lastName" required>
+    <div
+      id="loader"
+      class="loader">
+
+      Saving customer...
+
     </div>
 
-    <div class="form-group">
-    <label>Phone *</label>
-    <input id="phone" required>
-    </div>
+  </form>
 
-    <div class="form-group">
-    <label>Email *</label>
-    <input id="email" type="email" required>
-    </div>
+</div>
 
-    <div class="form-group">
-    <label>Address</label>
-    <textarea id="address"></textarea>
-    </div>
+<div class="footer">
 
-    <div class="buttons">
-    <button type="button" onclick="google.script.host.close()">Cancel</button>
-    <button type="submit" id="saveBtn">Save</button>
-    </div>
+  <button
+    type="button"
+    class="btnCancel"
+    onclick="google.script.host.close()">
 
-    </form>
+      Cancel
 
-    <script>
+  </button>
 
-    const mode=document.getElementById("mode").value;
-    const customerId=document.getElementById("customerId").value;
+  <button
+    id="saveBtn"
+    class="btnSave"
+    type="submit"
+    form="customerForm">
+
+      Save Customer
+
+  </button>
+
+</div>
+
+</div>
+
+<script>
+
+/*========================================================
+
+ GARAGE OS
+
+ Customer Form Controller
+
+========================================================*/
+
+const mode =
+document.getElementById("mode").value;
+
+const customerId =
+document.getElementById("customerId").value;
+
+const form =
+document.getElementById("customerForm");
+
+const loader =
+document.getElementById("loader");
+
+const saveBtn =
+document.getElementById("saveBtn");
+
+/*========================================================
+
+ INITIALIZATION
+
+========================================================*/
+
+document.addEventListener(
+"DOMContentLoaded",
+initializeForm
+);
+
+function initializeForm(){
+
+    loadReferenceData();
 
     if(mode==="edit"){
 
-     document.getElementById("title").textContent="Edit Customer";
-     document.getElementById("saveBtn").textContent="Update";
+        document.getElementById("title").textContent =
+        "Edit Customer";
 
-     google.script.run
-     .withSuccessHandler(fillForm)
-     .loadCustomer(customerId);
+        saveBtn.textContent =
+        "Update Customer";
 
-    }
+        google.script.run
 
-    function fillForm(customer){
+        .withSuccessHandler(loadCustomerData)
 
-     if(!customer)return;
+        .withFailureHandler(showServerError)
 
-     firstName.value=customer.firstName;
-     lastName.value=customer.lastName;
-     phone.value=customer.phone;
-     email.value=customer.email;
-     address.value=customer.address;
+        .loadCustomer(customerId);
 
     }
 
-    customerForm.addEventListener("submit",function(e){
+}
 
-     e.preventDefault();
+/*========================================================
 
-     const data={
-       mode,
-       customerId,
-       firstName:firstName.value,
-       lastName:lastName.value,
-       phone:phone.value,
-       email:email.value,
-       address:address.value
-     };
+ REFERENCE DATA
 
-     google.script.run
-     .withSuccessHandler(function(result){
+========================================================*/
 
-        if(result.success){
-           google.script.host.close();
-        }else{
-           alert(result.message);
-        }
+function loadReferenceData(){
 
-     })
-     .submitCustomerForm(data);
+    google.script.run
+
+    .withSuccessHandler(populateReferenceLists)
+
+    .withFailureHandler(showServerError)
+
+    .getCustomerReferenceData();
+
+}
+
+function populateReferenceLists(data){
+
+    populateSelect(
+
+        "state",
+
+        data.states,
+
+        "code",
+
+        "name"
+
+    );
+
+    populateSelect(
+
+        "preferredContact",
+
+        data.preferredContact,
+
+        "value",
+
+        "value"
+
+    );
+
+    populateSelect(
+
+        "status",
+
+        data.customerStatus,
+
+        "value",
+
+        "value"
+
+    );
+
+}
+
+function populateSelect(
+
+    elementId,
+
+    values,
+
+    valueField,
+
+    textField
+
+){
+
+    const select =
+    document.getElementById(elementId);
+
+    select.innerHTML="";
+
+    const empty =
+    document.createElement("option");
+
+    empty.value="";
+
+    empty.textContent="";
+
+    select.appendChild(empty);
+
+    values.forEach(function(item){
+
+        const option =
+        document.createElement("option");
+
+        option.value =
+        item[valueField];
+
+        option.textContent =
+        item[textField];
+
+        select.appendChild(option);
 
     });
 
-    </script>
+}
 
-    </body>
-    </html>
+/*========================================================
+
+ LOAD CUSTOMER
+
+========================================================*/
+
+function loadCustomerData(customer){
+
+    if(!customer)return;
+
+    firstName.value =
+    customer.firstName || "";
+
+    lastName.value =
+    customer.lastName || "";
+
+    phone.value =
+    customer.phone || "";
+
+    email.value =
+    customer.email || "";
+
+    address.value =
+    customer.address || "";
+
+    city.value =
+    customer.city || "";
+
+    state.value =
+    customer.state || "";
+
+    zipCode.value =
+    customer.zipCode || "";
+
+    preferredContact.value =
+    customer.preferredContact || "";
+
+    status.value =
+    customer.status || "";
+
+    notes.value =
+    customer.notes || "";
+
+}
+
+
+/*========================================================
+
+ FORM VALIDATION
+
+========================================================*/
+
+function validateForm(){
+
+    clearValidation();
+
+    let valid = true;
+
+    const requiredFields = [
+
+        "firstName",
+        "lastName",
+        "phone"
+
+    ];
+
+    requiredFields.forEach(function(id){
+
+        const element = document.getElementById(id);
+
+        if(element.value.trim()===""){
+
+            element.classList.add("error");
+
+            valid = false;
+
+        }
+
+    });
+
+    const emailValue = email.value.trim();
+
+    if(emailValue !== ""){
+
+        const emailRegex =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if(!emailRegex.test(emailValue)){
+
+            email.classList.add("error");
+
+            valid = false;
+
+        }
+
+    }
+
+    return valid;
+
+}
+
+function clearValidation(){
+
+    document
+
+    .querySelectorAll(
+
+        ".error"
+
+    )
+
+    .forEach(function(item){
+
+        item.classList.remove(
+
+            "error"
+
+        );
+
+    });
+
+}
+
+/*========================================================
+
+ FORM SUBMIT
+
+========================================================*/
+
+form.addEventListener(
+
+    "submit",
+
+    function(e){
+
+        e.preventDefault();
+
+        if(!validateForm()){
+
+            alert(
+
+                "Please complete all required fields."
+
+            );
+
+            return;
+
+        }
+
+        showLoader();
+
+        const customer = {
+
+            mode:mode,
+
+            customerId:customerId,
+
+            firstName:firstName.value.trim(),
+
+            lastName:lastName.value.trim(),
+
+            phone:phone.value.trim(),
+
+            email:email.value.trim(),
+
+            address:address.value.trim(),
+
+            city:city.value.trim(),
+
+            state:state.value,
+
+            zipCode:zipCode.value.trim(),
+
+            preferredContact:
+
+                preferredContact.value,
+
+            status:
+
+                status.value,
+
+            notes:
+
+                notes.value.trim()
+
+        };
+
+        google.script.run
+
+        .withSuccessHandler(
+
+            saveCompleted
+
+        )
+
+        .withFailureHandler(
+
+            saveFailed
+
+        )
+
+        .submitCustomerForm(
+
+            customer
+
+        );
+
+    }
+
+);
+
+/*========================================================
+
+ SAVE RESULT
+
+========================================================*/
+
+function saveCompleted(result){
+
+    hideLoader();
+
+    if(!result){
+
+        alert(
+
+            "Unknown response received."
+
+        );
+
+        return;
+
+    }
+
+    if(result.success){
+
+        google.script.host.close();
+
+        return;
+
+    }
+
+    alert(
+
+        result.message ||
+
+        "Unable to save customer."
+
+    );
+
+}
+
+function saveFailed(error){
+
+    hideLoader();
+
+    alert(
+
+        error.message ||
+
+        error ||
+
+        "Unexpected server error."
+
+    );
+
+}
+
+/*========================================================
+
+ LOADER
+
+========================================================*/
+
+function showLoader(){
+
+    loader.classList.add(
+
+        "show"
+
+    );
+
+    saveBtn.disabled = true;
+
+    saveBtn.textContent =
+
+        "Saving...";
+
+}
+
+function hideLoader(){
+
+    loader.classList.remove(
+
+        "show"
+
+    );
+
+    saveBtn.disabled = false;
+
+    saveBtn.textContent =
+
+        mode==="edit"
+
+        ? "Update Customer"
+
+        : "Save Customer";
+
+}
+
+/*========================================================
+
+ GENERIC SERVER ERROR
+
+========================================================*/
+
+function showServerError(error){
+
+    hideLoader();
+
+    alert(
+
+        error.message ||
+
+        error ||
+
+        "Unexpected server error."
+
+    );
+
+}
+
+/*========================================================
+
+ KEYBOARD SHORTCUTS
+
+========================================================*/
+
+document.addEventListener(
+
+    "keydown",
+
+    function(e){
+
+        if(
+
+            e.key==="Escape"
+
+        ){
+
+            google.script.host.close();
+
+        }
+
+    }
+
+);
+
+/*========================================================
+
+ END OF FILE
+
+ CustomerForm.html
+ GarageOS
+========================================================*/
+
+</script>
+
+</body>
+
+</html>

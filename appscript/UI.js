@@ -15,22 +15,6 @@
  */
 
 
-/******************************************************************************
- * CUSTOMERS
- ******************************************************************************/
-
-/**
- * Opens the New Customer screen.
- */
-function newCustomer() {
-
-  showCustomerForm({
-    mode: "create"
-  });
-
-}
-
-
 /**
  * Opens the Edit Customer screen.
  */

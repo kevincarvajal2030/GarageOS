@@ -65,6 +65,15 @@ function showCustomerForm(options) {
 }
 
 
+function openNewCustomer() {
+
+  showCustomerForm({
+    mode: "create"
+  });
+
+}
+
+
 /******************************************************************************
  * LOAD CUSTOMER
  ******************************************************************************/
@@ -168,12 +177,3 @@ function closeDialog() {
 
 }
 
-
-
-function openNewCustomer() {
-
-  showCustomerForm({
-    mode: "create"
-  });
-
-}
