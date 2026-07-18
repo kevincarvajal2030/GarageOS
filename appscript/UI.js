@@ -24,7 +24,9 @@
  */
 function newCustomer() {
 
-  showAlert("New Customer - Coming Soon");
+  showCustomerForm({
+    mode: "create"
+  });
 
 }
 
@@ -34,7 +36,9 @@ function newCustomer() {
  */
 function editCustomer() {
 
-  showAlert("Edit Customer - Coming Soon");
+  SpreadsheetApp.getUi().alert(
+    "Select a customer first."
+  );
 
 }
 
@@ -44,7 +48,9 @@ function editCustomer() {
  */
 function removeCustomer() {
 
-  showAlert("Delete Customer - Coming Soon");
+  SpreadsheetApp.getUi().alert(
+    "Select a customer first."
+  );
 
 }
 

@@ -1,0 +1,150 @@
+CustomerForm.html (Starter)
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <base target="_top">
+      <meta charset="UTF-8">
+
+      <style>
+        body{
+          font-family:Arial,sans-serif;
+          padding:20px;
+          background:#fff;
+        }
+
+        h2{
+          margin-top:0;
+        }
+
+        .form-group{
+          margin-bottom:12px;
+        }
+
+        label{
+          display:block;
+          font-weight:bold;
+          margin-bottom:4px;
+        }
+
+        input, textarea{
+          width:100%;
+          box-sizing:border-box;
+          padding:8px;
+        }
+
+        textarea{
+          resize:vertical;
+          min-height:70px;
+        }
+
+        .buttons{
+          margin-top:20px;
+          display:flex;
+          justify-content:flex-end;
+          gap:10px;
+        }
+      </style>
+    </head>
+
+    <body>
+
+    <h2 id="title">New Customer</h2>
+
+    <form id="customerForm">
+
+    <input type="hidden" id="mode" value="<?= options.mode ?>">
+    <input type="hidden" id="customerId" value="<?= options.customerId ?>">
+
+    <div class="form-group">
+    <label>First Name *</label>
+    <input id="firstName" required>
+    </div>
+
+    <div class="form-group">
+    <label>Last Name *</label>
+    <input id="lastName" required>
+    </div>
+
+    <div class="form-group">
+    <label>Phone *</label>
+    <input id="phone" required>
+    </div>
+
+    <div class="form-group">
+    <label>Email *</label>
+    <input id="email" type="email" required>
+    </div>
+
+    <div class="form-group">
+    <label>Address</label>
+    <textarea id="address"></textarea>
+    </div>
+
+    <div class="buttons">
+    <button type="button" onclick="google.script.host.close()">Cancel</button>
+    <button type="submit" id="saveBtn">Save</button>
+    </div>
+
+    </form>
+
+    <script>
+
+    const mode=document.getElementById("mode").value;
+    const customerId=document.getElementById("customerId").value;
+
+    if(mode==="edit"){
+
+     document.getElementById("title").textContent="Edit Customer";
+     document.getElementById("saveBtn").textContent="Update";
+
+     google.script.run
+     .withSuccessHandler(fillForm)
+     .loadCustomer(customerId);
+
+    }
+
+    function fillForm(customer){
+
+     if(!customer)return;
+
+     firstName.value=customer.firstName;
+     lastName.value=customer.lastName;
+     phone.value=customer.phone;
+     email.value=customer.email;
+     address.value=customer.address;
+
+    }
+
+    customerForm.addEventListener("submit",function(e){
+
+     e.preventDefault();
+
+     const data={
+       mode,
+       customerId,
+       firstName:firstName.value,
+       lastName:lastName.value,
+       phone:phone.value,
+       email:email.value,
+       address:address.value
+     };
+
+     google.script.run
+     .withSuccessHandler(function(result){
+
+        if(result.success){
+           google.script.host.close();
+        }else{
+           alert(result.message);
+        }
+
+     })
+     .submitCustomerForm(data);
+
+    });
+
+    </script>
+
+    </body>
+    </html>

@@ -87,7 +87,7 @@ function createCustomersMenu() {
 
     .addItem(
       "New Customer",
-      "newCustomer"
+      "openNewCustomer"
     )
 
     .addItem(

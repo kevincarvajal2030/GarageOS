@@ -59,25 +59,25 @@ const ID_PREFIX = {
 };
 
 
-const COUNTERS = {
+COUNTERS = {
 
-  CUSTOMER: "NextCustomerID",
+  CUSTOMER: "CUSTOMER_ID",
 
-  VEHICLE: "NextVehicleID",
+  VEHICLE: "VEHICLE_ID",
 
-  WORK_ORDER: "NextWorkOrderID",
+  WORK_ORDER: "WORK_ORDER_ID",
 
-  SERVICE: "NextServiceID",
+  SERVICE: "SERVICE_ID",
 
-  PART: "NextPartID",
+  PART: "PART_ID",
 
-  SUPPLIER: "NextSupplierID",
+  SUPPLIER: "SUPPLIER_ID",
 
-  PURCHASE: "NextPurchaseID",
+  PURCHASE: "PURCHASE_ID",
 
-  PAYMENT: "NextPaymentID",
+  PAYMENT: "PAYMENT_ID",
 
-  MECHANIC: "NextMechanicID"
+  MECHANIC: "MECHANIC_ID"
 
 };
 
