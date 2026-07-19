@@ -58,14 +58,19 @@ const AutoRowEngine = (() => {
 
     const idCell = sheet.getRange(row, config.fields[idField]);
 
-    if (!hasAllRequiredFields(sheet, row, config)) {
-      idCell.clearContent();
+    const currentId = idCell.getDisplayValue().trim();
+
+    // Si el registro ya tiene un ID válido,
+    // nunca volver a generarlo ni eliminarlo.
+    if (isValidRecordId(currentId, config)) {
       return;
     }
 
-    const currentId = idCell.getDisplayValue().toString().trim();
-
-    if (isValidRecordId(currentId, config)) return;
+    // Solo generar ID cuando la fila nueva
+    // tenga todos los campos requeridos.
+    if (!hasAllRequiredFields(sheet, row, config)) {
+      return;
+    }
 
     idCell.setValue(generateModuleId(config));
 
