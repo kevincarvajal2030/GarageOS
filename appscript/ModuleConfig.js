@@ -145,41 +145,25 @@ const ModuleConfig = (() => {
       fields: {
 
         VehicleID: 1,
-
         CustomerID: 2,
-
         LicensePlate: 3,
-
-        VIN: 4,
-
+        Year: 4,
         Make: 5,
-
         Model: 6,
-
-        Year: 7,
-
+        Transmission: 7,
         Color: 8,
-
-        Mileage: 9,
-
-        FuelType: 10,
-
-        Transmission: 11,
-
-        Status: 12,
-
-        Notes: 13
+        FuelType: 9,
+        Status: 10,
+        Notes: 11
 
       },
 
       requiredFields: [
 
         "CustomerID",
-
         "LicensePlate",
-
+        "Year",
         "Make",
-
         "Model"
 
       ],
@@ -192,9 +176,7 @@ const ModuleConfig = (() => {
 
       duplicateFields: [
 
-        "LicensePlate",
-
-        "VIN"
+        "LicensePlate"
 
       ]
 
@@ -216,29 +198,29 @@ const ModuleConfig = (() => {
 
       fields: {
 
-        WorkOrderID:1,
+        WorkOrderID: 1,
 
-        CustomerID:2,
+        CustomerID: 2,
 
-        VehicleID:3,
+        VehicleID: 3,
 
-        OpenDate:4,
+        OpenDate: 4,
 
-        CloseDate:5,
+        CloseDate: 5,
 
-        Status:6,
+        Status: 6,
 
-        Priority:7,
+        Priority: 7,
 
-        MechanicID:8,
+        MechanicID: 8,
 
-        Total:9,
+        Total: 9,
 
-        Notes:10
+        Notes: 10
 
       },
 
-      requiredFields:[
+      requiredFields: [
 
         "CustomerID",
 
@@ -248,13 +230,13 @@ const ModuleConfig = (() => {
 
       ],
 
-      protectedFields:[
+      protectedFields: [
 
         "WorkOrderID"
 
       ],
 
-      duplicateFields:[
+      duplicateFields: [
 
       ]
 
@@ -262,51 +244,51 @@ const ModuleConfig = (() => {
 
     "04_Services": {
 
-      entityName:"Service",
+      entityName: "Service",
 
-      idPrefix:"SER",
+      idPrefix: "SER",
 
-      counterKey:"SERVICE_ID",
+      counterKey: "SERVICE_ID",
 
-      autoGenerateId:true,
+      autoGenerateId: true,
 
-      allowManualDelete:true,
+      allowManualDelete: true,
 
-      allowManualEdition:true,
+      allowManualEdition: true,
 
-      fields:{
+      fields: {
 
-        ServiceID:1,
+        ServiceID: 1,
 
-        ServiceName:2,
+        ServiceName: 2,
 
-        Category:3,
+        Category: 3,
 
-        LaborHours:4,
+        LaborHours: 4,
 
-        LaborRate:5,
+        LaborRate: 5,
 
-        Price:6,
+        Price: 6,
 
-        Status:7,
+        Status: 7,
 
-        Notes:8
+        Notes: 8
 
       },
 
-      requiredFields:[
+      requiredFields: [
 
         "ServiceName"
 
       ],
 
-      protectedFields:[
+      protectedFields: [
 
         "ServiceID"
 
       ],
 
-      duplicateFields:[
+      duplicateFields: [
 
         "ServiceName"
 
@@ -316,43 +298,43 @@ const ModuleConfig = (() => {
 
     "05_Parts": {
 
-      entityName:"Part",
+      entityName: "Part",
 
-      idPrefix:"PRT",
+      idPrefix: "PRT",
 
-      counterKey:"PART_ID",
+      counterKey: "PART_ID",
 
-      autoGenerateId:true,
+      autoGenerateId: true,
 
-      allowManualDelete:true,
+      allowManualDelete: true,
 
-      allowManualEdition:true,
+      allowManualEdition: true,
 
-      fields:{
+      fields: {
 
-        PartID:1,
+        PartID: 1,
 
-        PartNumber:2,
+        PartNumber: 2,
 
-        Description:3,
+        Description: 3,
 
-        SupplierID:4,
+        SupplierID: 4,
 
-        Cost:5,
+        Cost: 5,
 
-        Price:6,
+        Price: 6,
 
-        Stock:7,
+        Stock: 7,
 
-        MinimumStock:8,
+        MinimumStock: 8,
 
-        Status:9,
+        Status: 9,
 
-        Notes:10
+        Notes: 10
 
       },
 
-      requiredFields:[
+      requiredFields: [
 
         "PartNumber",
 
@@ -360,13 +342,13 @@ const ModuleConfig = (() => {
 
       ],
 
-      protectedFields:[
+      protectedFields: [
 
         "PartID"
 
       ],
 
-      duplicateFields:[
+      duplicateFields: [
 
         "PartNumber"
 

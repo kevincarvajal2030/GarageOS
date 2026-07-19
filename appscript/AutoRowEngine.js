@@ -29,6 +29,7 @@ const AutoRowEngine = (() => {
     validateProtectedFields(sheet, row, config);
     validateDuplicateFields(sheet, row, config);
     generateRecordId(sheet, row, config);
+    formatPhoneField(sheet, row, config);
 
   }
 
@@ -102,6 +103,39 @@ const AutoRowEngine = (() => {
     }
 
   }
+
+  function formatPhoneNumber(phone) {
+
+    const digits = String(phone).replace(/\D/g, "");
+
+    if (digits.length !== 10) {
+      return phone;
+    }
+
+    return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
+
+  }
+
+  function formatPhoneField(sheet, row, config) {
+
+    const column = config.fields.Phone;
+
+    if (!column) return;
+
+    const cell = sheet.getRange(row, column);
+
+    const value = cell.getDisplayValue().trim();
+
+    if (!value) return;
+
+    const formatted = formatPhoneNumber(value);
+
+    if (formatted !== value) {
+      cell.setValue(formatted);
+    }
+
+  }
+
 
   function validateProtectedFields(sheet, row, config) {
     // TODO
