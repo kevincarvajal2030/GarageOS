@@ -40,32 +40,32 @@ const ReferenceService = (() => {
    */
   function readColumn(startRow, column) {
 
-  const sheet = getSheet();
-  const lastRow = sheet.getLastRow();
+    const sheet = getSheet();
+    const lastRow = sheet.getLastRow();
 
-  const values = sheet
-    .getRange(startRow, column, lastRow - startRow + 1, 1)
-    .getValues();
+    const values = sheet
+      .getRange(startRow, column, lastRow - startRow + 1, 1)
+      .getValues();
 
-  const result = [];
+    const result = [];
 
-  for (const row of values) {
+    for (const row of values) {
 
-    const value = String(row[0]).trim();
+      const value = String(row[0]).trim();
 
-    if (value === "") {
-      break;
+      if (value === "") {
+        break;
+      }
+
+      result.push({
+        value: value
+      });
+
     }
 
-    result.push({
-      value: value
-    });
+    return result;
 
   }
-
-  return result;
-
-}
 
   /**
    * Reads States table.
@@ -108,67 +108,67 @@ const ReferenceService = (() => {
 
   function getCustomerStatus() {
 
-    return readColumn(6,1);
+    return readColumn(6, 1);
 
   }
 
   function getPreferredContact() {
 
-    return readColumn(6,2);
+    return readColumn(6, 2);
 
   }
 
   function getVehicleStatus() {
 
-    return readColumn(6,3);
+    return readColumn(6, 3);
 
   }
 
   function getFuelTypes() {
 
-    return readColumn(6,4);
+    return readColumn(6, 4);
 
   }
 
   function getTransmission() {
 
-    return readColumn(6,5);
+    return readColumn(6, 5);
 
   }
 
   function getWorkOrderStatus() {
 
-    return readColumn(6,6);
+    return readColumn(6, 6);
 
   }
 
   function getPriority() {
 
-    return readColumn(6,7);
+    return readColumn(6, 7);
 
   }
 
   function getPaymentMethods() {
 
-    return readColumn(6,8);
+    return readColumn(6, 8);
 
   }
 
   function getPaymentStatus() {
 
-    return readColumn(6,9);
+    return readColumn(6, 9);
 
   }
 
   function getSupplierStatus() {
 
-    return readColumn(6,10);
+    return readColumn(6, 10);
 
   }
 
   function getMechanicStatus() {
 
-    return readColumn(6,11);
+    return readColumn(6, 11);
 
   }
 
@@ -264,11 +264,59 @@ const ReferenceService = (() => {
   }
 
   /**
+   * Finds a Customer ID by full customer name.
+   *
+   * @param {string} customerName
+   * @returns {string|null}
+   */
+  function findCustomerIdByName(customerName) {
+
+    const sheet = SpreadsheetApp
+      .getActive()
+      .getSheetByName(SHEETS.CUSTOMERS);
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return null;
+    }
+
+    const values = sheet.getRange(
+      TABLE.FIRST_DATA_ROW,
+      1,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      3
+    ).getValues();
+
+    customerName = String(customerName).trim();
+
+    for (const row of values) {
+
+      const customerId = String(row[0]).trim();
+      const firstName = String(row[1]).trim();
+      const lastName = String(row[2]).trim();
+
+      const fullName = firstName + " " + lastName;
+
+      if (fullName === customerName) {
+        return customerId;
+      }
+
+    }
+
+    return null;
+
+  }
+
+
+  /**
    * Public API
    */
   return {
 
     getStates,
+
+    findCustomerIdByName,
 
     getCustomerStatus,
 
@@ -338,3 +386,8 @@ function getSupplierReferenceData() {
 function getMechanicReferenceData() {
   return ReferenceService.getMechanicReferenceData();
 }
+
+function findCustomerIdByName(customerName) {
+  return ReferenceService.findCustomerIdByName(customerName);
+}
+

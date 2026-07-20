@@ -68,7 +68,7 @@ function verifySheets() {
 
     SHEETS.MECHANICS,
 
-    SHEETS.SETTINGS,
+    SHEETS.REFERENCEDATA,
 
     SHEETS.SYSTEM
 
@@ -155,6 +155,7 @@ function aboutGarageOS() {
   );
 
 }
+
 
 
 

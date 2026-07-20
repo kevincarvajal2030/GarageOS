@@ -1,62 +1,40 @@
-/******************************************************************************
- * VEHICLE VALIDATION
- ******************************************************************************/
-
 /**
- * Validates a vehicle VIN.
- *
- * Standard VIN length is 17 characters.
- *
- * @param {*} value Value to validate.
- * @param {string} fieldName Display name of the field.
+ * Synchronizes Customer ID from Customer Name.
  */
-function validateVehicleVin(value, fieldName) {
+function syncCustomerId(sheet, row) {
 
-  validateRequiredField(value, fieldName);
-  validateTextField(value, fieldName);
+  const config = ModuleConfig.get(sheet.getName());
 
-  const vin = value.trim().toUpperCase();
+  if (!config) return;
 
-  if (vin.length !== 17) {
-    throwValidationError(`${fieldName} must contain exactly 17 characters.`);
+  const customerNameColumn = config.fields.CustomerName;
+  const customerIdColumn = config.fields.CustomerID;
+
+  const customerName = sheet
+    .getRange(row, customerNameColumn)
+    .getDisplayValue()
+    .trim();
+
+  if (customerName === "") {
+
+    sheet.getRange(row, customerIdColumn).clearContent();
+
+    return;
+
   }
 
-}
+  const customerId = findCustomerIdByName(customerName);
 
+  if (!customerId) {
 
-/**
- * Validates a vehicle license plate.
- *
- * Only checks that a value exists.
- * Country-specific validation rules can be added later.
- *
- * @param {*} value Value to validate.
- * @param {string} fieldName Display name of the field.
- */
-function validateLicensePlate(value, fieldName) {
+    sheet.getRange(row, customerIdColumn).clearContent();
 
-  validateRequiredField(value, fieldName);
-  validateTextField(value, fieldName);
+    return;
 
-}
-
-
-/**
- * Validates a vehicle manufacturing year.
- *
- * @param {*} value Value to validate.
- * @param {string} fieldName Display name of the field.
- */
-function validateVehicleYear(value, fieldName) {
-
-  validateNumberField(value, fieldName);
-
-  const currentYear = new Date().getFullYear() + 1;
-
-  if (value < 1900 || value > currentYear) {
-    throwValidationError(
-      `${fieldName} must be between 1900 and ${currentYear}.`
-    );
   }
+
+  sheet
+    .getRange(row, customerIdColumn)
+    .setValue(customerId);
 
 }

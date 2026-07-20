@@ -51,30 +51,25 @@ const ModuleConfig = (() => {
       fields: {
 
         CustomerID: 1,
-
         FirstName: 2,
-
         LastName: 3,
-
         Phone: 4,
-
         Email: 5,
-
         Address: 6,
-
         City: 7,
-
         State: 8,
-
         ZIPCode: 9,
-
         PreferredContact: 10,
-
         Status: 11,
-
         Notes: 12
 
       },
+
+      primaryKey: "CustomerID",
+
+      foreignKeys: [],
+
+      protectedFields: [],
 
       /**
        * --------------------------------------------------------
@@ -85,32 +80,11 @@ const ModuleConfig = (() => {
       requiredFields: [
 
         "FirstName",
-
         "LastName",
-
         "Phone",
-
         "Email"
 
       ],
-
-      /**
-       * --------------------------------------------------------
-       * Protected Fields
-       * --------------------------------------------------------
-       */
-
-      protectedFields: [
-
-        "CustomerID"
-
-      ],
-
-      /**
-       * --------------------------------------------------------
-       * Duplicate Detection
-       * --------------------------------------------------------
-       */
 
       duplicateFields: [
 
@@ -125,7 +99,6 @@ const ModuleConfig = (() => {
       ]
 
     },
-
 
 
     "02_Vehicles": {
@@ -145,32 +118,37 @@ const ModuleConfig = (() => {
       fields: {
 
         VehicleID: 1,
-        CustomerID: 2,
-        LicensePlate: 3,
-        Year: 4,
-        Make: 5,
-        Model: 6,
-        Transmission: 7,
-        Color: 8,
-        FuelType: 9,
-        Status: 10,
-        Notes: 11
+        CustomerName: 2,
+        CustomerID: 3,
+        LicensePlate: 4,
+        Year: 5,
+        Make: 6,
+        Model: 7,
+        Transmission: 8,
+        Color: 9,
+        FuelType: 10,
+        Status: 11,
+        Notes: 12
 
       },
 
-      requiredFields: [
+      primaryKey: "VehicleID",
 
-        "CustomerID",
-        "LicensePlate",
-        "Year",
-        "Make",
-        "Model"
+      foreignKeys: [
+
+        "CustomerID"
 
       ],
 
-      protectedFields: [
+      protectedFields: [],
 
-        "VehicleID"
+      requiredFields: [
+
+        "CustomerName",
+        "CustomerID",
+        "LicensePlate",
+        "Year",
+        "Make"
 
       ],
 
@@ -181,6 +159,7 @@ const ModuleConfig = (() => {
       ]
 
     },
+
 
     "03_Work_Orders": {
 
@@ -199,26 +178,26 @@ const ModuleConfig = (() => {
       fields: {
 
         WorkOrderID: 1,
-
         CustomerID: 2,
-
         VehicleID: 3,
-
         OpenDate: 4,
-
         CloseDate: 5,
-
         Status: 6,
-
         Priority: 7,
-
         MechanicID: 8,
-
         Total: 9,
-
         Notes: 10
 
       },
+
+      primaryKey: "WorkOrderID",
+
+      foreignKeys: [
+        "CustomerID",
+        "VehicleID"
+      ],
+
+      protectedFields: [],
 
       requiredFields: [
 
@@ -227,12 +206,6 @@ const ModuleConfig = (() => {
         "VehicleID",
 
         "Status"
-
-      ],
-
-      protectedFields: [
-
-        "WorkOrderID"
 
       ],
 
@@ -259,22 +232,23 @@ const ModuleConfig = (() => {
       fields: {
 
         ServiceID: 1,
-
         ServiceName: 2,
-
         Category: 3,
-
         LaborHours: 4,
-
         LaborRate: 5,
-
         Price: 6,
-
         Status: 7,
-
         Notes: 8
 
       },
+
+      primaryKey: "ServiceID",
+
+      foreignKeys: [
+        
+      ],
+
+      protectedFields: [],
 
       requiredFields: [
 
@@ -282,11 +256,6 @@ const ModuleConfig = (() => {
 
       ],
 
-      protectedFields: [
-
-        "ServiceID"
-
-      ],
 
       duplicateFields: [
 
@@ -313,40 +282,33 @@ const ModuleConfig = (() => {
       fields: {
 
         PartID: 1,
-
         PartNumber: 2,
-
         Description: 3,
-
         SupplierID: 4,
-
         Cost: 5,
-
         Price: 6,
-
         Stock: 7,
-
         MinimumStock: 8,
-
         Status: 9,
-
         Notes: 10
 
       },
 
+      primaryKey: "PartID",
+
+      foreignKeys: [
+        
+      ],
+
+      protectedFields: [],
+
       requiredFields: [
 
         "PartNumber",
-
         "Description"
 
       ],
 
-      protectedFields: [
-
-        "PartID"
-
-      ],
 
       duplicateFields: [
 
@@ -373,28 +335,26 @@ const ModuleConfig = (() => {
       fields: {
 
         SupplierID: 1,
-
         SupplierName: 2,
-
         ContactName: 3,
-
         Phone: 4,
-
         Email: 5,
-
         Address: 6,
-
         City: 7,
-
         State: 8,
-
         ZIPCode: 9,
-
         Status: 10,
-
         Notes: 11
 
       },
+
+      primaryKey: "SupplierID",
+
+      foreignKeys: [
+        
+      ],
+
+      protectedFields: [],
 
       requiredFields: [
 
@@ -402,11 +362,6 @@ const ModuleConfig = (() => {
 
       ],
 
-      protectedFields: [
-
-        "SupplierID"
-
-      ],
 
       duplicateFields: [
 
@@ -433,28 +388,25 @@ const ModuleConfig = (() => {
       fields: {
 
         PurchaseID: 1,
-
         SupplierID: 2,
-
         PurchaseDate: 3,
-
         Total: 4,
-
         Status: 5,
-
         Notes: 6
 
       },
 
+      primaryKey: "PurchaseID",
+
+      foreignKeys: [
+        
+      ],
+
+      protectedFields: [],
+
       requiredFields: [
 
         "SupplierID"
-
-      ],
-
-      protectedFields: [
-
-        "PurchaseID"
 
       ],
 
@@ -479,32 +431,28 @@ const ModuleConfig = (() => {
       fields: {
 
         PaymentID: 1,
-
         WorkOrderID: 2,
-
         PaymentDate: 3,
-
         PaymentMethod: 4,
-
         Amount: 5,
-
         Status: 6,
-
         Notes: 7
 
       },
+
+      primaryKey: "PaymentID",
+
+      foreignKeys: [
+        
+      ],
+
+      protectedFields: [],
 
       requiredFields: [
 
         "WorkOrderID",
 
         "Amount"
-
-      ],
-
-      protectedFields: [
-
-        "PaymentID"
 
       ],
 
@@ -544,17 +492,17 @@ const ModuleConfig = (() => {
 
       },
 
+      primaryKey: "MechanicID",
+
+      foreignKeys: [],
+
+      protectedFields: [],
+
       requiredFields: [
 
         "FirstName",
 
         "LastName"
-
-      ],
-
-      protectedFields: [
-
-        "MechanicID"
 
       ],
 

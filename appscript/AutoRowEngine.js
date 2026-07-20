@@ -20,15 +20,23 @@ const AutoRowEngine = (() => {
 
     if (row < TABLE.FIRST_DATA_ROW) return;
 
-    processRow(sheet, row, config);
+    processRow(sheet, row, config, event);
 
   }
 
-  function processRow(sheet, row, config) {
+  function processRow(sheet, row, config, event) {
 
-    validateProtectedFields(sheet, row, config);
-    validateDuplicateFields(sheet, row, config);
+    if (
+      sheet.getName() === SHEETS.VEHICLES &&
+      event.range.getColumn() === config.fields.CustomerName
+    ) {
+
+      syncCustomerId(sheet, row);
+
+    }
+
     generateRecordId(sheet, row, config);
+
     formatPhoneField(sheet, row, config);
 
   }
@@ -121,6 +129,7 @@ const AutoRowEngine = (() => {
 
   }
 
+
   function formatPhoneField(sheet, row, config) {
 
     const column = config.fields.Phone;
@@ -133,7 +142,23 @@ const AutoRowEngine = (() => {
 
     if (!value) return;
 
-    const formatted = formatPhoneNumber(value);
+    const digits = value.replace(/\D/g, "");
+
+    if (digits.length !== 10) {
+
+      cell.clearContent();
+
+      SpreadsheetApp.getActiveSpreadsheet().toast(
+        "Phone number must contain exactly 10 digits.",
+        APP.NAME,
+        3
+      );
+
+      return;
+
+    }
+
+    const formatted = formatPhoneNumber(digits);
 
     if (formatted !== value) {
       cell.setValue(formatted);
@@ -141,14 +166,6 @@ const AutoRowEngine = (() => {
 
   }
 
-
-  function validateProtectedFields(sheet, row, config) {
-    // TODO
-  }
-
-  function validateDuplicateFields(sheet, row, config) {
-    // TODO
-  }
 
   return {
     processEdit
