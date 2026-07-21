@@ -12,8 +12,6 @@ function formatID(prefix, number) {
 
 }
 
-
-
 /**
  * Returns the next available number.
  *
