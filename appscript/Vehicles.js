@@ -38,3 +38,35 @@ function syncCustomerReference(sheet, row) {
     .setValue(customerId);
 
 }
+
+
+/**
+ * Refreshes the Customer Name dropdown using only ACTIVE customers.
+ */
+function refreshCustomerDropdown() {
+
+  const sheet = SpreadsheetApp
+    .getActive()
+    .getSheetByName(SHEETS.VEHICLES);
+
+  const customerColumn =
+    MODULE_CONFIG.VEHICLES.columns.customerName;
+
+  const customers = getActiveCustomerNames();
+
+  const rule = SpreadsheetApp
+    .newDataValidation()
+    .requireValueInList(customers, true)
+    .setAllowInvalid(false)
+    .build();
+
+  sheet
+    .getRange(
+      TABLE.FIRST_DATA_ROW,
+      customerColumn,
+      sheet.getMaxRows() - TABLE.FIRST_DATA_ROW + 1,
+      1
+    )
+    .setDataValidation(rule);
+
+}

@@ -264,6 +264,52 @@ const ReferenceService = (() => {
   }
 
   /**
+ * Returns all ACTIVE customer names.
+ *
+ * @returns {string[]}
+ */
+  function getActiveCustomerNames() {
+
+    const sheet = SpreadsheetApp
+      .getActive()
+      .getSheetByName(SHEETS.CUSTOMERS);
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return [];
+    }
+
+    const values = sheet.getRange(
+      TABLE.FIRST_DATA_ROW,
+      2,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      10
+    ).getValues();
+
+    const customers = [];
+
+    values.forEach(row => {
+
+      const firstName = String(row[0]).trim();
+      const lastName = String(row[1]).trim();
+      const status = String(row[9]).trim();
+
+      if (status !== "Active") {
+        return;
+      }
+
+      customers.push(
+        firstName + " " + lastName
+      );
+
+    });
+
+    return customers;
+
+  }
+
+  /**
    * Finds a Customer ID by full customer name.
    *
    * @param {string} customerName
@@ -446,6 +492,8 @@ const ReferenceService = (() => {
 
     getStates,
 
+    getActiveCustomerNames,
+
     findCustomerIdByName,
 
     getVehiclesByCustomer,
@@ -540,4 +588,8 @@ function findVehicleIdByName(customerId, vehicleName) {
 
 function findMechanicIdByName(mechanicName) {
   return ReferenceService.findMechanicIdByName(mechanicName);
+}
+
+function getActiveCustomerNames() {
+  return ReferenceService.getActiveCustomerNames();
 }
