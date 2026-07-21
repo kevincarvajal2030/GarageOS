@@ -339,6 +339,13 @@ const AutoRowEngine = (() => {
 
   function validateCustomerStatusChange(sheet, row, config, event) {
 
+    Logger.log({
+      oldValue: event.oldValue,
+      value: event.value,
+      column: event.range.getColumn(),
+      customerId: sheet.getRange(row, config.fields.CustomerID).getValue()
+    });
+
     const previousStatus = String(event.oldValue || "").trim();
     const newStatus = String(event.value || "").trim();
 
@@ -349,16 +356,12 @@ const AutoRowEngine = (() => {
     if (
       newStatus !== "Blocked" &&
       newStatus !== "Inactive"
-
     ) {
       return;
     }
 
     const customerId = sheet
-      .getRange(
-        row,
-        config.fields.CustomerID
-      )
+      .getRange(row, config.fields.CustomerID)
       .getDisplayValue()
       .trim();
 
@@ -368,9 +371,9 @@ const AutoRowEngine = (() => {
 
     const ss = SpreadsheetApp.getActive();
 
-    const workOrdersSheet = ss.getSheetByName(
-      SHEETS.WORK_ORDERS
-    );
+    const workOrdersConfig = ModuleConfig.get(SHEETS.WORK_ORDERS);
+
+    const workOrdersSheet = ss.getSheetByName(SHEETS.WORK_ORDERS);
 
     if (!workOrdersSheet) {
       return;
@@ -393,34 +396,39 @@ const AutoRowEngine = (() => {
 
     for (const workOrder of workOrders) {
 
-      const workOrderCustomerId =
-        String(
-          workOrder[
-          MODULE_CONFIG.WORK_ORDERS.columns.customerID - 1
-          ] || ""
-        ).trim();
+      const workOrderCustomerId = String(
+        workOrder[workOrdersConfig.fields.CustomerID - 1] || ""
+      ).trim();
+
+      const workOrderStatus = String(
+        workOrder[workOrdersConfig.fields.Status - 1] || ""
+      ).trim();
+
+      Logger.log({
+        workOrderCustomerId,
+        workOrderStatus,
+        customerId
+      });
 
       if (workOrderCustomerId !== customerId) {
         continue;
       }
 
-      const workOrderStatus =
-        String(
-          workOrder[
-          MODULE_CONFIG.WORK_ORDERS.columns.status - 1
-          ] || ""
-        ).trim();
-
       if (
         workOrderStatus === "In Progress" ||
-        workOrderStatus === "Waiting Part"
+        workOrderStatus === "Waiting Parts"
       ) {
 
         event.range.setValue(previousStatus);
 
+        const action =
+          newStatus === "Blocked"
+            ? "blocked"
+            : "set as inactive";
+
         SpreadsheetApp.getActiveSpreadsheet().toast(
-          "Customer cannot be blocked because there is an active Work Order.",
-          APP_NAME,
+          `Customer cannot be ${action} because there is an active Work Order.`,
+          APP.NAME,
           5
         );
 

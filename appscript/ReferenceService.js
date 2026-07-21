@@ -264,11 +264,11 @@ const ReferenceService = (() => {
   }
 
   /**
- * Returns all ACTIVE customer names.
+ * Returns every customer name.
  *
  * @returns {string[]}
  */
-  function getActiveCustomerNames() {
+  function getCustomerNames() {
 
     const sheet = SpreadsheetApp
       .getActive()
@@ -284,7 +284,7 @@ const ReferenceService = (() => {
       TABLE.FIRST_DATA_ROW,
       2,
       lastRow - TABLE.FIRST_DATA_ROW + 1,
-      10
+      2
     ).getValues();
 
     const customers = [];
@@ -293,15 +293,12 @@ const ReferenceService = (() => {
 
       const firstName = String(row[0]).trim();
       const lastName = String(row[1]).trim();
-      const status = String(row[9]).trim();
 
-      if (status !== "Active") {
+      if (!firstName && !lastName) {
         return;
       }
 
-      customers.push(
-        firstName + " " + lastName
-      );
+      customers.push(firstName + " " + lastName);
 
     });
 
@@ -492,7 +489,7 @@ const ReferenceService = (() => {
 
     getStates,
 
-    getActiveCustomerNames,
+    getCustomerNames,
 
     findCustomerIdByName,
 
@@ -590,6 +587,6 @@ function findMechanicIdByName(mechanicName) {
   return ReferenceService.findMechanicIdByName(mechanicName);
 }
 
-function getActiveCustomerNames() {
-  return ReferenceService.getActiveCustomerNames();
+function getCustomerNames() {
+  return ReferenceService.getCustomerNames();
 }
