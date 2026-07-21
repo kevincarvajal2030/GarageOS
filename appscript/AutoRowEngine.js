@@ -71,6 +71,8 @@ const AutoRowEngine = (() => {
     validateEmailField(sheet, row, config, event);
 
     validateDuplicateFields(sheet, row, config, event);
+
+    runBusinessValidations(sheet, row, config, event);
   }
 
   function hasAllRequiredFields(sheet, row, config) {
@@ -302,6 +304,138 @@ const AutoRowEngine = (() => {
       );
 
     });
+
+  }
+
+  function runBusinessValidations(sheet, row, config, event) {
+
+    switch (sheet.getName()) {
+
+      case SHEETS.CUSTOMERS:
+        runCustomerBusinessValidations(sheet, row, config, event);
+        break;
+
+      case SHEETS.VEHICLES:
+        runVehicleBusinessValidations(sheet, row, config, event);
+        break;
+
+      case SHEETS.WORK_ORDERS:
+        runWorkOrderBusinessValidations(sheet, row, config, event);
+        break;
+
+    }
+
+  }
+
+  function runCustomerBusinessValidations(sheet, row, config, event) {
+    if (
+      event.range.getColumn() !== config.fields.Status
+    ) {
+      return;
+    }
+
+    validateCustomerStatusChange(sheet, row, config, event);
+  }
+
+  function validateCustomerStatusChange(sheet, row, config, event) {
+
+    const previousStatus = String(event.oldValue || "").trim();
+    const newStatus = String(event.value || "").trim();
+
+    if (previousStatus !== "Active") {
+      return;
+    }
+
+    if (
+      newStatus !== "Blocked" &&
+      newStatus !== "Inactive"
+
+    ) {
+      return;
+    }
+
+    const customerId = sheet
+      .getRange(
+        row,
+        config.fields.CustomerID
+      )
+      .getDisplayValue()
+      .trim();
+
+    if (!customerId) {
+      return;
+    }
+
+    const ss = SpreadsheetApp.getActive();
+
+    const workOrdersSheet = ss.getSheetByName(
+      SHEETS.WORK_ORDERS
+    );
+
+    if (!workOrdersSheet) {
+      return;
+    }
+
+    const lastRow = workOrdersSheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return;
+    }
+
+    const workOrders = workOrdersSheet
+      .getRange(
+        TABLE.FIRST_DATA_ROW,
+        1,
+        lastRow - TABLE.FIRST_DATA_ROW + 1,
+        workOrdersSheet.getLastColumn()
+      )
+      .getValues();
+
+    for (const workOrder of workOrders) {
+
+      const workOrderCustomerId =
+        String(
+          workOrder[
+          MODULE_CONFIG.WORK_ORDERS.columns.customerID - 1
+          ] || ""
+        ).trim();
+
+      if (workOrderCustomerId !== customerId) {
+        continue;
+      }
+
+      const workOrderStatus =
+        String(
+          workOrder[
+          MODULE_CONFIG.WORK_ORDERS.columns.status - 1
+          ] || ""
+        ).trim();
+
+      if (
+        workOrderStatus === "In Progress" ||
+        workOrderStatus === "Waiting Part"
+      ) {
+
+        event.range.setValue(previousStatus);
+
+        SpreadsheetApp.getActiveSpreadsheet().toast(
+          "Customer cannot be blocked because there is an active Work Order.",
+          APP_NAME,
+          5
+        );
+
+        return;
+      }
+
+    }
+
+  }
+
+  function runVehicleBusinessValidations(sheet, row, config, event) {
+
+  }
+
+  function runWorkOrderBusinessValidations(sheet, row, config, event) {
 
   }
 
