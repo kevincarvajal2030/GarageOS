@@ -1,283 +1,207 @@
 /**
- * ============================================================================
- * GARAGE OS
- * Work Orders Module
- * ============================================================================
+ * Synchronizes Customer ID from Customer Name.
  *
- * Handles all work order business logic.
- *
- * Responsibilities:
- *   - Create work orders.
- *   - Update work orders.
- *   - Delete work orders.
- *   - Validate work order information.
- *   - Build work order records.
- *
- * Uses:
- *   - Validation.gs
- *   - Database.gs
- *   - IDs.gs
- * ============================================================================
+ * Work Orders:
+ * Customer Name  -> Customer ID
  */
+function syncWorkOrderCustomer(sheet, row) {
 
+  const config = ModuleConfig.get(sheet.getName());
 
-/******************************************************************************
- * WORK ORDER CRUD
- ******************************************************************************/
+  if (!config) return;
 
-/**
- * Creates a new work order.
- *
- * @param {Object} workOrderData
- */
-function createWorkOrder(workOrderData) {
+  const customerNameColumn = config.fields.CustomerName;
+  const customerIdColumn = config.fields.CustomerID;
 
-  validateWorkOrderData(workOrderData);
+  const customerName = sheet
+    .getRange(row, customerNameColumn)
+    .getDisplayValue()
+    .trim();
 
-  const record = buildWorkOrderRecord(workOrderData);
+  if (customerName === "") {
 
-  appendRecord(
-    SHEETS.WORK_ORDERS,
-    record
-  );
+    sheet
+      .getRange(row, customerIdColumn)
+      .clearContent();
 
-}
-
-
-/**
- * Updates an existing work order.
- *
- * @param {string} workOrderId
- * @param {Object} workOrderData
- */
-function updateWorkOrder(workOrderId, workOrderData) {
-
-  validateWorkOrderData(workOrderData);
-
-  const existingRecord = getRecord(
-    SHEETS.WORK_ORDERS,
-    workOrderId
-  );
-
-  if (!existingRecord) {
-
-    throw new Error("Work order not found.");
+    return;
 
   }
 
-  const updatedRecord = [
+  const customerId = findCustomerIdByName(customerName);
 
-    workOrderId,
+  if (!customerId) {
 
-    workOrderData.customerId,
+    sheet
+      .getRange(row, customerIdColumn)
+      .clearContent();
 
-    workOrderData.vehicleId,
-
-    workOrderData.date,
-
-    workOrderData.status,
-
-    workOrderData.problem,
-
-    workOrderData.mechanic,
-
-    workOrderData.total,
-
-    existingRecord[8]
-
-  ];
-
-  updateRecord(
-    SHEETS.WORK_ORDERS,
-    workOrderId,
-    updatedRecord
-  );
-
-}
-
-
-/**
- * Deletes a work order.
- *
- * @param {string} workOrderId
- */
-function deleteWorkOrder(workOrderId) {
-
-  deleteRecord(
-    SHEETS.WORK_ORDERS,
-    workOrderId
-  );
-
-}
-
-
-/******************************************************************************
- * WORK ORDER QUERIES
- ******************************************************************************/
-
-/**
- * Returns a work order by ID.
- *
- * @param {string} workOrderId
- * @returns {Object|null}
- */
-function getWorkOrderById(workOrderId) {
-
-  const record = getRecord(
-    SHEETS.WORK_ORDERS,
-    workOrderId
-  );
-
-  if (!record) {
-
-    return null;
+    return;
 
   }
 
-  return {
-
-    id: record[0],
-
-    customerId: record[1],
-
-    vehicleId: record[2],
-
-    date: record[3],
-
-    status: record[4],
-
-    problem: record[5],
-
-    mechanic: record[6],
-
-    total: record[7],
-
-    createdAt: record[8]
-
-  };
+  sheet
+    .getRange(row, customerIdColumn)
+    .setValue(customerId);
 
 }
 
 
 /**
- * Determines whether a work order exists.
+ * Creates the Vehicle dropdown filtered by Customer ID.
  *
- * @param {string} workOrderId
- * @returns {boolean}
+ * Work Orders:
+ * Customer ID -> Vehicle dropdown
  */
-function workOrderExists(workOrderId) {
+function syncWorkOrderVehicleValidation(sheet, row) {
 
-  return recordExists(
-    SHEETS.WORK_ORDERS,
-    workOrderId
-  );
+  const config = ModuleConfig.get(sheet.getName());
+
+  if (!config) return;
+
+  const customerIdColumn = config.fields.CustomerID;
+  const vehicleNameColumn = config.fields.VehicleName;
+  const vehicleIdColumn = config.fields.VehicleID;
+
+  const customerId = sheet
+    .getRange(row, customerIdColumn)
+    .getDisplayValue()
+    .trim();
+
+  const vehicleNameCell = sheet.getRange(row, vehicleNameColumn);
+  const vehicleIdCell = sheet.getRange(row, vehicleIdColumn);
+
+  // Clear previous vehicle selection before rebuilding the dropdown.
+  vehicleNameCell.clearContent();
+  vehicleIdCell.clearContent();
+
+  if (customerId === "") {
+
+    vehicleNameCell.clearDataValidations();
+
+    return;
+
+  }
+
+  const vehicles = getVehiclesByCustomer(customerId);
+
+  const vehicleNames = vehicles.map(vehicle => vehicle.name);
+
+  if (vehicleNames.length === 0) {
+
+    vehicleNameCell.clearDataValidations();
+
+    return;
+
+  }
+
+  const rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(vehicleNames, true)
+    .setAllowInvalid(false)
+    .build();
+
+  vehicleNameCell.setDataValidation(rule);
 
 }
 
 
-/******************************************************************************
- * WORK ORDER VALIDATION
- ******************************************************************************/
 
 /**
- * Validates work order information.
+ * Synchronizes Vehicle ID from Vehicle Name.
  *
- * @param {Object} workOrderData
+ * Work Orders:
+ * Vehicle Name -> Vehicle ID
  */
-function validateWorkOrderData(workOrderData) {
+function syncWorkOrderVehicle(sheet, row) {
 
-  validateObjectField(
-    workOrderData,
-    "Work Order"
+  const config = ModuleConfig.get(sheet.getName());
+
+  if (!config) return;
+
+  const customerIdColumn = config.fields.CustomerID;
+  const vehicleNameColumn = config.fields.VehicleName;
+  const vehicleIdColumn = config.fields.VehicleID;
+
+  const customerId = sheet
+    .getRange(row, customerIdColumn)
+    .getDisplayValue()
+    .trim();
+
+  const vehicleName = sheet
+    .getRange(row, vehicleNameColumn)
+    .getDisplayValue()
+    .trim();
+
+  const vehicleIdCell = sheet.getRange(row, vehicleIdColumn);
+
+  if (customerId === "" || vehicleName === "") {
+
+    vehicleIdCell.clearContent();
+
+    return;
+
+  }
+
+  const vehicleId = findVehicleIdByName(
+    customerId,
+    vehicleName
   );
 
-  validateTextField(
-    workOrderData.customerId,
-    "Customer",
-    {
-      required: true
-    }
-  );
+  if (!vehicleId) {
 
-  validateTextField(
-    workOrderData.vehicleId,
-    "Vehicle",
-    {
-      required: true
-    }
-  );
+    vehicleIdCell.clearContent();
 
-  validateDateField(
-    workOrderData.date,
-    "Date"
-  );
+    return;
 
-  validateTextField(
-    workOrderData.status,
-    "Status",
-    {
-      required: true
-    }
-  );
+  }
 
-  validateTextField(
-    workOrderData.problem,
-    "Problem",
-    {
-      required: true,
-      minimumLength: 5,
-      maximumLength: 500
-    }
-  );
-
-  validateTextField(
-    workOrderData.mechanic,
-    "Mechanic",
-    {
-      required: true
-    }
-  );
-
-  validatePositiveNumberField(
-    workOrderData.total,
-    "Total"
-  );
+  vehicleIdCell.setValue(vehicleId);
 
 }
 
-
-/******************************************************************************
- * WORK ORDER RECORD
- ******************************************************************************/
 
 /**
- * Builds a work order record.
+ * Synchronizes Mechanic ID from Mechanic Name.
  *
- * @param {Object} workOrderData
- * @returns {Array}
+ * Work Orders:
+ * Mechanic Name -> Mechanic ID
  */
-function buildWorkOrderRecord(workOrderData) {
+function syncWorkOrderMechanic(sheet, row) {
 
-  return [
+  const config = ModuleConfig.get(sheet.getName());
 
-    generateWorkOrderID(),
+  if (!config) return;
 
-    workOrderData.customerId,
+  const mechanicNameColumn = config.fields.MechanicName;
+  const mechanicIdColumn = config.fields.MechanicID;
 
-    workOrderData.vehicleId,
+  const mechanicName = sheet
+    .getRange(row, mechanicNameColumn)
+    .getDisplayValue()
+    .trim();
 
-    workOrderData.date,
+  const mechanicIdCell = sheet.getRange(row, mechanicIdColumn);
 
-    workOrderData.status,
+  if (mechanicName === "") {
 
-    workOrderData.problem,
+    mechanicIdCell.clearContent();
 
-    workOrderData.mechanic,
+    return;
 
-    workOrderData.total,
+  }
 
-    getTimestamp()
+  const mechanicId = findMechanicIdByName(mechanicName);
 
-  ];
+  if (!mechanicId) {
+
+    mechanicIdCell.clearContent();
+
+    return;
+
+  }
+
+  mechanicIdCell.setValue(mechanicId);
 
 }
+
+

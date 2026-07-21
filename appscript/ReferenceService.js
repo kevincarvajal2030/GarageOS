@@ -308,6 +308,136 @@ const ReferenceService = (() => {
 
   }
 
+  /**
+ * Returns every vehicle belonging to a customer.
+ *
+ * @param {string} customerId
+ * @returns {Array}
+ */
+  function getVehiclesByCustomer(customerId) {
+
+    const sheet = SpreadsheetApp
+      .getActive()
+      .getSheetByName(SHEETS.VEHICLES);
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return [];
+    }
+
+    const values = sheet.getRange(
+      TABLE.FIRST_DATA_ROW,
+      1,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      13
+    ).getValues();
+
+    const vehicles = [];
+
+    customerId = String(customerId).trim();
+
+    values.forEach(row => {
+
+      const vehicleId = String(row[0]).trim();
+
+      const rowCustomerId = String(row[2]).trim();
+
+      const make = String(row[4]).trim();
+
+      const model = String(row[5]).trim();
+
+      const year = String(row[6]).trim();
+
+      if (rowCustomerId !== customerId) {
+        return;
+      }
+
+      vehicles.push({
+
+        id: vehicleId,
+
+        name: `${make} ${model} ${year}`
+
+      });
+
+    });
+
+    return vehicles;
+
+  }
+
+  /**
+ * Finds the Vehicle ID from Customer ID and Vehicle Name.
+ *
+ * @param {string} customerId
+ * @param {string} vehicleName
+ * @returns {string|null}
+ */
+  function findVehicleIdByName(customerId, vehicleName) {
+
+    const vehicles = getVehiclesByCustomer(customerId);
+
+    vehicleName = String(vehicleName).trim();
+
+    for (const vehicle of vehicles) {
+
+      if (vehicle.name === vehicleName) {
+        return vehicle.id;
+      }
+
+    }
+
+    return null;
+
+  }
+
+  /**
+ * Finds a Mechanic ID by Mechanic Name.
+ *
+ * @param {string} mechanicName
+ * @returns {string|null}
+ */
+  function findMechanicIdByName(mechanicName) {
+
+    const sheet = SpreadsheetApp
+      .getActive()
+      .getSheetByName(SHEETS.MECHANICS);
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return null;
+    }
+
+    const values = sheet.getRange(
+      TABLE.FIRST_DATA_ROW,
+      1,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      3
+    ).getValues();
+
+    mechanicName = String(mechanicName).trim();
+
+    for (const row of values) {
+
+      const mechanicId = String(row[0]).trim();
+
+      const firstName = String(row[1]).trim();
+
+      const lastName = String(row[2]).trim();
+
+      const fullName = firstName + " " + lastName;
+
+      if (fullName === mechanicName) {
+        return mechanicId;
+      }
+
+    }
+
+    return null;
+
+  }
 
   /**
    * Public API
@@ -317,6 +447,12 @@ const ReferenceService = (() => {
     getStates,
 
     findCustomerIdByName,
+
+    getVehiclesByCustomer,
+
+    findVehicleIdByName,
+
+    findMechanicIdByName,
 
     getCustomerStatus,
 
@@ -391,3 +527,17 @@ function findCustomerIdByName(customerName) {
   return ReferenceService.findCustomerIdByName(customerName);
 }
 
+function getVehiclesByCustomer(customerId) {
+  return ReferenceService.getVehiclesByCustomer(customerId);
+}
+
+function findVehicleIdByName(customerId, vehicleName) {
+  return ReferenceService.findVehicleIdByName(
+    customerId,
+    vehicleName
+  );
+}
+
+function findMechanicIdByName(mechanicName) {
+  return ReferenceService.findMechanicIdByName(mechanicName);
+}

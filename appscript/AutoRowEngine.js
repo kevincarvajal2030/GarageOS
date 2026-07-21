@@ -31,14 +31,46 @@ const AutoRowEngine = (() => {
       event.range.getColumn() === config.fields.CustomerName
     ) {
 
-      syncCustomerId(sheet, row);
+      syncCustomerReference(sheet, row);
+
+    }
+
+    if (
+      sheet.getName() === SHEETS.WORK_ORDERS &&
+      event.range.getColumn() === config.fields.CustomerName
+    ) {
+
+      syncWorkOrderCustomer(sheet, row);
+
+      syncWorkOrderVehicleValidation(sheet, row);
+
+    }
+
+    if (
+      sheet.getName() === SHEETS.WORK_ORDERS &&
+      event.range.getColumn() === config.fields.VehicleName
+    ) {
+
+      syncWorkOrderVehicle(sheet, row);
+
+    }
+
+    if (
+      sheet.getName() === SHEETS.WORK_ORDERS &&
+      event.range.getColumn() === config.fields.MechanicName
+    ) {
+
+      syncWorkOrderMechanic(sheet, row);
 
     }
 
     generateRecordId(sheet, row, config);
 
-    formatPhoneField(sheet, row, config);
+    formatPhoneField(sheet, row, config, event);
 
+    validateEmailField(sheet, row, config, event);
+
+    validateDuplicateFields(sheet, row, config, event);
   }
 
   function hasAllRequiredFields(sheet, row, config) {
@@ -130,7 +162,7 @@ const AutoRowEngine = (() => {
   }
 
 
-  function formatPhoneField(sheet, row, config) {
+  function formatPhoneField(sheet, row, config, event) {
 
     const column = config.fields.Phone;
 
@@ -146,7 +178,15 @@ const AutoRowEngine = (() => {
 
     if (digits.length !== 10) {
 
-      cell.clearContent();
+      if (event.oldValue !== undefined) {
+
+        cell.setValue(event.oldValue);
+
+      } else {
+
+        cell.clearContent();
+
+      }
 
       SpreadsheetApp.getActiveSpreadsheet().toast(
         "Phone number must contain exactly 10 digits.",
@@ -163,6 +203,105 @@ const AutoRowEngine = (() => {
     if (formatted !== value) {
       cell.setValue(formatted);
     }
+
+  }
+
+  function validateEmailField(sheet, row, config, event) {
+
+    const column = config.fields.Email;
+
+    if (!column) return;
+
+    const cell = sheet.getRange(row, column);
+
+    const value = cell.getDisplayValue().trim();
+
+    if (!value) return;
+
+    const emailRegex =
+      /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+    if (!emailRegex.test(value)) {
+
+      if (event.oldValue !== undefined) {
+
+        cell.setValue(event.oldValue);
+
+      } else {
+
+        cell.clearContent();
+
+      }
+
+      SpreadsheetApp.getActiveSpreadsheet().toast(
+        "Invalid email address.",
+        APP.NAME,
+        3
+      );
+
+    }
+
+  }
+
+  function validateDuplicateFields(sheet, row, config, event) {
+
+    if (!config.duplicateFields || config.duplicateFields.length === 0) {
+      return;
+    }
+
+    config.duplicateFields.forEach(field => {
+
+      const column = config.fields[field];
+
+      if (!column) return;
+
+      if (event.range.getColumn() !== column) return;
+
+      const value = sheet
+        .getRange(row, column)
+        .getDisplayValue()
+        .trim();
+
+      if (!value) return;
+
+      const lastRow = sheet.getLastRow();
+
+      const values = sheet
+        .getRange(TABLE.FIRST_DATA_ROW, column, lastRow - TABLE.FIRST_DATA_ROW + 1)
+        .getDisplayValues();
+
+      let duplicated = false;
+
+      for (let i = 0; i < values.length; i++) {
+
+        const currentRow = TABLE.FIRST_DATA_ROW + i;
+
+        if (currentRow === row) continue;
+
+        if (values[i][0].trim() === value) {
+          duplicated = true;
+          break;
+        }
+
+      }
+
+      if (!duplicated) return;
+
+      const cell = sheet.getRange(row, column);
+
+      if (event.oldValue !== undefined) {
+        cell.setValue(event.oldValue);
+      } else {
+        cell.clearContent();
+      }
+
+      SpreadsheetApp.getActiveSpreadsheet().toast(
+        field + " already exists.",
+        APP.NAME,
+        3
+      );
+
+    });
 
   }
 

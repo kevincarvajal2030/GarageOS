@@ -88,12 +88,7 @@ const ModuleConfig = (() => {
 
       duplicateFields: [
 
-        "FirstName",
-
-        "LastName",
-
         "Phone",
-
         "Email"
 
       ]
@@ -121,9 +116,9 @@ const ModuleConfig = (() => {
         CustomerName: 2,
         CustomerID: 3,
         LicensePlate: 4,
-        Year: 5,
-        Make: 6,
-        Model: 7,
+        Make: 5,
+        Model: 6,
+        Year: 7,
         Transmission: 8,
         Color: 9,
         FuelType: 10,
@@ -178,15 +173,22 @@ const ModuleConfig = (() => {
       fields: {
 
         WorkOrderID: 1,
-        CustomerID: 2,
-        VehicleID: 3,
-        OpenDate: 4,
-        CloseDate: 5,
-        Status: 6,
-        Priority: 7,
-        MechanicID: 8,
-        Total: 9,
-        Notes: 10
+        CustomerName: 2,
+        CustomerID: 3,
+        VehicleName: 4,
+        VehicleID: 5,
+        MechanicName: 6,
+        MechanicID: 7,
+        OpenDate: 8,
+        Status: 9,
+        Priority: 10,
+        Mileage: 11,
+        Complaint: 12,
+        Diagnosis: 13,
+        LaborCost: 14,
+        PartCost: 15,
+        TotalCost: 16, 
+        CompletionDate: 17
 
       },
 
@@ -201,11 +203,13 @@ const ModuleConfig = (() => {
 
       requiredFields: [
 
+        "CustomerName",
         "CustomerID",
-
+        "VehicleName",
         "VehicleID",
-
-        "Status"
+        "MechanicName",
+        "MechanicID",
+        "OpenDate",
 
       ],
 
@@ -335,16 +339,14 @@ const ModuleConfig = (() => {
       fields: {
 
         SupplierID: 1,
-        SupplierName: 2,
-        ContactName: 3,
+        CompanyName: 2,
+        ContactPerson: 3,
         Phone: 4,
         Email: 5,
         Address: 6,
         City: 7,
         State: 8,
-        ZIPCode: 9,
-        Status: 10,
-        Notes: 11
+        Status: 9
 
       },
 
@@ -358,18 +360,23 @@ const ModuleConfig = (() => {
 
       requiredFields: [
 
-        "SupplierName"
+        "CompanyName",
+        "ContactPerson",
+        "Phone",
+        "Email",
 
       ],
 
 
       duplicateFields: [
 
-        "SupplierName"
+        "Phone",
+        "Email"
 
       ]
 
     },
+
 
     "07_Purchases": {
 
@@ -477,19 +484,13 @@ const ModuleConfig = (() => {
       fields: {
 
         MechanicID: 1,
-
         FirstName: 2,
-
         LastName: 3,
-
         Phone: 4,
-
         Email: 5,
-
-        Status: 6,
-
-        Notes: 7
-
+        HireDate: 6,
+        Specialty: 7,
+        Status: 8
       },
 
       primaryKey: "MechanicID",
@@ -508,11 +509,8 @@ const ModuleConfig = (() => {
 
       duplicateFields: [
 
-        "FirstName",
-
-        "LastName",
-
-        "Phone"
+        "Phone",
+        "Email"
 
       ]
 

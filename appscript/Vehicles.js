@@ -1,7 +1,7 @@
 /**
  * Synchronizes Customer ID from Customer Name.
  */
-function syncCustomerId(sheet, row) {
+function syncCustomerReference(sheet, row) {
 
   const config = ModuleConfig.get(sheet.getName());
 
