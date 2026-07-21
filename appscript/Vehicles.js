@@ -2,7 +2,7 @@
  * Synchronizes Customer ID from Customer Name
  * and validates Customer Status.
  */
-function syncCustomerReference(sheet, row) {
+function syncCustomerReference(event, sheet, row) {
 
   const config = ModuleConfig.get(sheet.getName());
 
@@ -11,12 +11,12 @@ function syncCustomerReference(sheet, row) {
   const customerNameColumn = config.fields.CustomerName;
   const customerIdColumn = config.fields.CustomerID;
 
-  const customerName = sheet
-    .getRange(row, customerNameColumn)
+  const customerNameCell = sheet.getRange(row, customerNameColumn);
+  const customerIdCell = sheet.getRange(row, customerIdColumn);
+
+  const customerName = customerNameCell
     .getDisplayValue()
     .trim();
-
-  const customerIdCell = sheet.getRange(row, customerIdColumn);
 
   if (customerName === "") {
 
@@ -41,8 +41,25 @@ function syncCustomerReference(sheet, row) {
     customerStatus === "Inactive"
   ) {
 
-    sheet.getRange(row, customerNameColumn).clearContent();
-    customerIdCell.clearContent();
+    if (event.oldValue !== undefined) {
+
+      customerNameCell.setValue(event.oldValue);
+
+      const previousCustomerId =
+        findCustomerIdByName(event.oldValue);
+
+      if (previousCustomerId) {
+        customerIdCell.setValue(previousCustomerId);
+      } else {
+        customerIdCell.clearContent();
+      }
+
+    } else {
+
+      customerNameCell.clearContent();
+      customerIdCell.clearContent();
+
+    }
 
     SpreadsheetApp.getActiveSpreadsheet().toast(
       `Customer is ${customerStatus}. Activate the customer before assigning a vehicle.`,

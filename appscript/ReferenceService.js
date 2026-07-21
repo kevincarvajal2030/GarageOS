@@ -280,16 +280,32 @@ const ReferenceService = (() => {
       return [];
     }
 
+    // B = First Name
+    // C = Last Name
+    // K = Status
+
     const values = sheet.getRange(
       TABLE.FIRST_DATA_ROW,
       2,
       lastRow - TABLE.FIRST_DATA_ROW + 1,
-      2
+      10
     ).getDisplayValues();
 
     return values
-      .filter(row => row[0] && row[1])
-      .map(row => row[0].trim() + " " + row[1].trim());
+      .filter(row => {
+
+        const firstName = String(row[0]).trim();
+        const lastName = String(row[1]).trim();
+        const status = String(row[9]).trim();
+
+        return (
+          firstName &&
+          lastName &&
+          status === "Active"
+        );
+
+      })
+      .map(row => `${row[0].trim()} ${row[1].trim()}`);
 
   }
 

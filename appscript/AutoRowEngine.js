@@ -31,7 +31,7 @@ const AutoRowEngine = (() => {
       event.range.getColumn() === config.fields.CustomerName
     ) {
 
-      syncCustomerReference(sheet, row);
+      syncCustomerReference(event, sheet, row);
 
     }
 
@@ -319,9 +319,12 @@ const AutoRowEngine = (() => {
 
         if (
           column === config.fields.FirstName ||
-          column === config.fields.LastName
+          column === config.fields.LastName ||
+          column === config.fields.Status
         ) {
+
           updateCustomerReferenceList();
+
         }
 
         break;
@@ -487,6 +490,7 @@ const AutoRowEngine = (() => {
   }
 
   function runVehicleBusinessValidations(sheet, row, config, event) {
+
 
   }
 
