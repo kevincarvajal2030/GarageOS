@@ -1,5 +1,6 @@
 /**
- * Synchronizes Customer ID from Customer Name.
+ * Synchronizes Customer ID from Customer Name
+ * and validates Customer Status.
  */
 function syncCustomerReference(sheet, row) {
 
@@ -15,10 +16,11 @@ function syncCustomerReference(sheet, row) {
     .getDisplayValue()
     .trim();
 
+  const customerIdCell = sheet.getRange(row, customerIdColumn);
+
   if (customerName === "") {
 
-    sheet.getRange(row, customerIdColumn).clearContent();
-
+    customerIdCell.clearContent();
     return;
 
   }
@@ -27,15 +29,32 @@ function syncCustomerReference(sheet, row) {
 
   if (!customerId) {
 
-    sheet.getRange(row, customerIdColumn).clearContent();
+    customerIdCell.clearContent();
+    return;
+
+  }
+
+  const customerStatus = findCustomerStatusById(customerId);
+
+  if (
+    customerStatus === "Blocked" ||
+    customerStatus === "Inactive"
+  ) {
+
+    sheet.getRange(row, customerNameColumn).clearContent();
+    customerIdCell.clearContent();
+
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      `Customer is ${customerStatus}. Activate the customer before assigning a vehicle.`,
+      APP.NAME,
+      5
+    );
 
     return;
 
   }
 
-  sheet
-    .getRange(row, customerIdColumn)
-    .setValue(customerId);
+  customerIdCell.setValue(customerId);
 
 }
 
@@ -52,7 +71,7 @@ function refreshCustomerDropdown() {
   const customerColumn =
     MODULE_CONFIG.VEHICLES.columns.customerName;
 
-  const customers = getActiveCustomerNames();
+  const customers = getCustomerNames();
 
   const rule = SpreadsheetApp
     .newDataValidation()

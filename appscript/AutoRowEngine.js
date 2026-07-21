@@ -73,6 +73,8 @@ const AutoRowEngine = (() => {
     validateDuplicateFields(sheet, row, config, event);
 
     runBusinessValidations(sheet, row, config, event);
+
+    updateReferenceLists(sheet, config, event);
   }
 
   function hasAllRequiredFields(sheet, row, config) {
@@ -306,6 +308,51 @@ const AutoRowEngine = (() => {
     });
 
   }
+
+  function updateReferenceLists(sheet, config, event) {
+
+    const column = event.range.getColumn();
+
+    switch (sheet.getName()) {
+
+      case SHEETS.CUSTOMERS:
+
+        if (
+          column === config.fields.FirstName ||
+          column === config.fields.LastName
+        ) {
+          updateCustomerReferenceList();
+        }
+
+        break;
+
+      case SHEETS.VEHICLES:
+
+        if (
+          column === config.fields.Make ||
+          column === config.fields.Model ||
+          column === config.fields.Year
+        ) {
+          updateVehicleReferenceList();
+        }
+
+        break;
+
+      case SHEETS.MECHANICS:
+
+        if (
+          column === config.fields.FirstName ||
+          column === config.fields.LastName
+        ) {
+          updateMechanicReferenceList();
+        }
+
+        break;
+
+    }
+
+  }
+
 
   function runBusinessValidations(sheet, row, config, event) {
 

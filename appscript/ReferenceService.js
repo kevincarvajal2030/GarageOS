@@ -285,24 +285,52 @@ const ReferenceService = (() => {
       2,
       lastRow - TABLE.FIRST_DATA_ROW + 1,
       2
-    ).getValues();
+    ).getDisplayValues();
 
-    const customers = [];
+    return values
+      .filter(row => row[0] && row[1])
+      .map(row => row[0].trim() + " " + row[1].trim());
 
-    values.forEach(row => {
+  }
 
-      const firstName = String(row[0]).trim();
-      const lastName = String(row[1]).trim();
 
-      if (!firstName && !lastName) {
-        return;
-      }
+  /**
+ * Updates the CustomerReference list.
+ */
+  function updateCustomerReferenceList() {
 
-      customers.push(firstName + " " + lastName);
+    const ss = SpreadsheetApp.getActive();
 
-    });
+    const sheet = ss.getSheetByName(
+      SHEETS.REFERENCEDATA
+    );
 
-    return customers;
+    const customers = getCustomerNames();
+
+    const START_ROW = 2;
+    const COLUMN = 17; // Q
+
+    sheet
+      .getRange(
+        START_ROW,
+        COLUMN,
+        sheet.getMaxRows(),
+        1
+      )
+      .clearContent();
+
+    if (customers.length === 0) return;
+
+    sheet
+      .getRange(
+        START_ROW,
+        COLUMN,
+        customers.length,
+        1
+      )
+      .setValues(
+        customers.map(name => [name])
+      );
 
   }
 
@@ -350,6 +378,47 @@ const ReferenceService = (() => {
     return null;
 
   }
+
+
+  /**
+ * Finds the Customer Status by Customer ID.
+ *
+ * @param {string} customerId
+ * @returns {string|null}
+ */
+  function findCustomerStatusById(customerId) {
+
+    const sheet = SpreadsheetApp
+      .getActive()
+      .getSheetByName(SHEETS.CUSTOMERS);
+
+    const lastRow = sheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return null;
+    }
+
+    const values = sheet.getRange(
+      TABLE.FIRST_DATA_ROW,
+      1,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      11
+    ).getValues();
+
+    customerId = String(customerId).trim();
+
+    for (const row of values) {
+
+      if (String(row[0]).trim() === customerId) {
+        return String(row[10]).trim();
+      }
+
+    }
+
+    return null;
+
+  }
+
 
   /**
  * Returns every vehicle belonging to a customer.
@@ -493,6 +562,8 @@ const ReferenceService = (() => {
 
     findCustomerIdByName,
 
+    findCustomerStatusById,
+
     getVehiclesByCustomer,
 
     findVehicleIdByName,
@@ -589,4 +660,8 @@ function findMechanicIdByName(mechanicName) {
 
 function getCustomerNames() {
   return ReferenceService.getCustomerNames();
+}
+
+function findCustomerStatusById(customerId) {
+  return ReferenceService.findCustomerStatusById(customerId);
 }
