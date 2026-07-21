@@ -112,36 +112,3 @@ function validateCustomerData(customerData) {
   );
 
 }
-
-
-/******************************************************************************
- * CUSTOMER RECORD
- ******************************************************************************/
-
-/**
- * Builds a customer record ready to be written into the database.
- *
- * @param {Object} customerData
- * @returns {Array}
- */
-function buildCustomerRecord(customerData) {
-
-  return [
-
-    generateCustomerID(),
-
-    customerData.firstName.trim(),
-
-    customerData.lastName.trim(),
-
-    customerData.phone.trim(),
-
-    customerData.email.trim(),
-
-    customerData.address || "",
-
-    getTimestamp()
-
-  ];
-
-}
