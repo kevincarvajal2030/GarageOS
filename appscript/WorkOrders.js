@@ -71,29 +71,30 @@ function syncWorkOrderVehicleValidation(sheet, row) {
   const vehicleNameCell = sheet.getRange(row, vehicleNameColumn);
   const vehicleIdCell = sheet.getRange(row, vehicleIdColumn);
 
-  // Clear previous vehicle selection before rebuilding the dropdown.
   vehicleNameCell.clearContent();
   vehicleIdCell.clearContent();
+  vehicleNameCell.clearDataValidations();
 
-  if (customerId === "") {
-
-    vehicleNameCell.clearDataValidations();
-
+  if (!customerId) {
     return;
-
   }
 
   const vehicles = getVehiclesByCustomer(customerId);
 
-  const vehicleNames = vehicles.map(vehicle => vehicle.name);
+  debug("Vehicles Found", vehicles);
 
-  if (vehicleNames.length === 0) {
+  if (vehicles.length === 0) {
 
-    vehicleNameCell.clearDataValidations();
+    showToast(
+      "This customer has no active vehicles.",
+      "GarageOS"
+    );
 
     return;
 
   }
+
+  const vehicleNames = vehicles.map(v => v.name);
 
   const rule = SpreadsheetApp.newDataValidation()
     .requireValueInList(vehicleNames, true)
@@ -101,6 +102,12 @@ function syncWorkOrderVehicleValidation(sheet, row) {
     .build();
 
   vehicleNameCell.setDataValidation(rule);
+
+  // Auto-select first vehicle
+  vehicleNameCell.setValue(vehicleNames[0]);
+
+  // Auto-fill Vehicle ID
+  vehicleIdCell.setValue(vehicles[0].id);
 
 }
 

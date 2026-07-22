@@ -1,11 +1,17 @@
-//Vehicles.cs
 /**
-* Returns every vehicle belonging to a customer.
-*
-* @param {string} customerId
-* @returns {Array}
-*/
+ * Vehicles.gs  
+ * Returns every ACTIVE vehicle belonging to a customer.
+ *
+ * @param {string} customerId
+ * @returns {Array}
+ */
 function getVehiclesByCustomer(customerId) {
+
+  customerId = String(customerId || "").trim();
+
+  if (!customerId) {
+    return [];
+  }
 
   const sheet = SpreadsheetApp
     .getActive()
@@ -24,35 +30,51 @@ function getVehiclesByCustomer(customerId) {
     13
   ).getValues();
 
-  const vehicles = [];
+  debug("SHEET_NAME", sheet.getName());
 
-  customerId = String(customerId).trim();
+  debug("FIRST_ROW", values[0]);
+
+  debug("SECOND_ROW", values[1]);
+
+  debug("TOTAL_ROWS", values.length);
+
+  const vehicles = [];
 
   values.forEach(row => {
 
     const vehicleId = String(row[0]).trim();
-
     const rowCustomerId = String(row[2]).trim();
 
     const make = String(row[4]).trim();
-
     const model = String(row[5]).trim();
-
     const year = String(row[6]).trim();
+
+    // Columna M = Status
+    const status = String(row[12]).trim().toLowerCase();
+
+    debug("COMPARE", {
+      searching: customerId,
+      current: rowCustomerId,
+      match: rowCustomerId === customerId
+    });
 
     if (rowCustomerId !== customerId) {
       return;
     }
 
+    // Solo vehículos activos
+    if (status !== "active") {
+      return;
+    }
+
     vehicles.push({
-
       id: vehicleId,
-
       name: `${make} ${model} ${year}`
-
     });
 
   });
+
+  debug("Vehicles Result", vehicles);
 
   return vehicles;
 
