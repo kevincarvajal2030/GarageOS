@@ -1,4 +1,3 @@
-
 /**
  * Displays a toast message.
  *

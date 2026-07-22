@@ -86,9 +86,6 @@ function generateID(counterKey, prefix) {
 }
 
 
-
-
-
 function generateCustomerID() {
 
   return generateID(

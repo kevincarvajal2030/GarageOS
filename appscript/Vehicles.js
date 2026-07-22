@@ -1,3 +1,5 @@
+//Vehicles.cs
+
 /**
  * Synchronizes Customer ID from Customer Name
  * and validates Customer Status.
@@ -75,3 +77,8 @@ function syncCustomerReference(event, sheet, row) {
 
 }
 
+
+function runVehicleBusinessValidations(sheet, row, config, event) {
+
+
+  }
