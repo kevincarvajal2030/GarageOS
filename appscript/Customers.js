@@ -1,6 +1,92 @@
 //Customers.gs
 
 
+/**
+ * Synchronizes Customer ID from Customer Name
+ * and validates Customer Status.
+ */
+function syncCustomerReference(event, sheet, row) {
+
+  debug("syncCustomerReference", "START");
+
+  const config = ModuleConfig.get(sheet.getName());
+
+  if (!config) return;
+
+  const customerNameColumn = config.fields.CustomerName;
+  const customerIdColumn = config.fields.CustomerID;
+
+  const customerNameCell = sheet.getRange(row, customerNameColumn);
+  const customerIdCell = sheet.getRange(row, customerIdColumn);
+
+  const customerName = customerNameCell
+    .getDisplayValue()
+    .trim();
+
+  if (customerName === "") {
+
+    customerIdCell.clearContent();
+    return;
+
+  }
+
+  debug("Customer Name", customerName);
+
+  const customerId = findCustomerIdByName(customerName);
+
+  debug("Customer ID", customerId);
+
+  if (!customerId) {
+
+    customerIdCell.clearContent();
+    return;
+
+  }
+
+  const customerStatus = findCustomerStatusById(customerId);
+
+  debug("Customer Status", customerStatus);
+
+  if (
+    customerStatus === "Blocked" ||
+    customerStatus === "Inactive"
+  ) {
+
+    if (event.oldValue !== undefined) {
+
+      customerNameCell.setValue(event.oldValue);
+
+      const previousCustomerId =
+        findCustomerIdByName(event.oldValue);
+
+      if (previousCustomerId) {
+        customerIdCell.setValue(previousCustomerId);
+      } else {
+        customerIdCell.clearContent();
+      }
+
+    } else {
+
+      customerNameCell.clearContent();
+      customerIdCell.clearContent();
+
+    }
+
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      `Customer is ${customerStatus}. Activate the customer before assigning a vehicle.`,
+      APP.NAME,
+      5
+    );
+
+    return;
+
+  }
+
+  customerIdCell.setValue(customerId);
+
+}
+
+
 function runCustomerBusinessValidations(sheet, row, config, event) {
   if (
     event.range.getColumn() !== config.fields.Status

@@ -264,28 +264,21 @@ const ReferenceService = (() => {
   }
 
 
-  /**
-   * Public API
-   */
   return {
+
+    // Generic
 
     getStates,
 
-    getCustomerNames,
-
-    findCustomerIdByName,
-
-    findCustomerStatusById,
-
-    getVehiclesByCustomer,
-
-    findVehicleIdByName,
-
-    findMechanicIdByName,
+    // Customer
 
     getCustomerStatus,
 
     getPreferredContact,
+
+    getCustomerReferenceData,
+
+    // Vehicle
 
     getVehicleStatus,
 
@@ -293,27 +286,33 @@ const ReferenceService = (() => {
 
     getTransmission,
 
+    getVehicleReferenceData,
+
+    // Work Orders
+
     getWorkOrderStatus,
 
     getPriority,
+
+    getWorkOrderReferenceData,
+
+    // Payments
 
     getPaymentMethods,
 
     getPaymentStatus,
 
-    getSupplierStatus,
-
-    getMechanicStatus,
-
-    getCustomerReferenceData,
-
-    getVehicleReferenceData,
-
-    getWorkOrderReferenceData,
-
     getPaymentReferenceData,
 
+    // Suppliers
+
+    getSupplierStatus,
+
     getSupplierReferenceData,
+
+    // Mechanics
+
+    getMechanicStatus,
 
     getMechanicReferenceData
 
@@ -321,60 +320,4 @@ const ReferenceService = (() => {
 
 })();
 
-/**
- * ============================================================
- * GAS Wrappers
- * These functions are callable from HTML via google.script.run
- * ============================================================
- */
 
-function getCustomerReferenceData() {
-  return ReferenceService.getCustomerReferenceData();
-}
-
-function getVehicleReferenceData() {
-  return ReferenceService.getVehicleReferenceData();
-}
-
-function getWorkOrderReferenceData() {
-  return ReferenceService.getWorkOrderReferenceData();
-}
-
-function getPaymentReferenceData() {
-  return ReferenceService.getPaymentReferenceData();
-}
-
-function getSupplierReferenceData() {
-  return ReferenceService.getSupplierReferenceData();
-}
-
-function getMechanicReferenceData() {
-  return ReferenceService.getMechanicReferenceData();
-}
-
-function findCustomerIdByName(customerName) {
-  return ReferenceService.findCustomerIdByName(customerName);
-}
-
-function getVehiclesByCustomer(customerId) {
-  return ReferenceService.getVehiclesByCustomer(customerId);
-}
-
-function findVehicleIdByName(customerId, vehicleName) {
-  return ReferenceService.findVehicleIdByName(
-    customerId,
-    vehicleName
-  );
-}
-
-function findMechanicIdByName(mechanicName) {
-  return ReferenceService.findMechanicIdByName(mechanicName);
-}
-
-function getCustomerNames() {
-  return ReferenceService.getCustomerNames();
-}
-
-function findCustomerStatusById(customerId) {
-  return ReferenceService.findCustomerStatusById(customerId);
-}

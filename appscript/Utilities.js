@@ -11,3 +11,15 @@ function showToast(message, title) {
     .toast(message, title);
 
 }
+
+
+function debug(label, value) {
+
+  console.log(
+    JSON.stringify({
+      step: label,
+      value: value
+    })
+  );
+
+}
