@@ -50,7 +50,7 @@ const AutoRowEngine = (() => {
       event.range.getColumn() === config.fields.CustomerName
     ) {
 
-      syncWorkOrderCustomer(sheet, row);
+      syncCustomerReference(event, sheet, row);
 
       syncWorkOrderVehicleValidation(sheet, row);
 
