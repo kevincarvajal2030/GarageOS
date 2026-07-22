@@ -2,6 +2,16 @@
  * ============================================================================
  * GarageOS
  * AutoRowEngine.gs
+ * ----------------------------------------------------------------------------
+ * Central event orchestrator for GarageOS.
+ *
+ * Responsibilities:
+ * - Receives every onEdit event.
+ * - Detects which module triggered the edit.
+ * - Executes the processing pipeline.
+ *
+ * Every module is responsible for its own business rules.
+ * AutoRowEngine only coordinates execution.
  * ============================================================================
  */
 
