@@ -60,18 +60,6 @@ function getData(sheetName) {
 }
 
 
-/**
- * Appends one row.
- *
- * @param {string} sheetName
- * @param {Array} row
- */
-function appendRow(sheetName, row) {
-
-  getSheet(sheetName)
-    .appendRow(row);
-
-}
 
 
 /**
@@ -166,68 +154,4 @@ function getRecord(sheetName, id) {
 }
 
 
-/**
- * Replaces a complete record.
- *
- * @param {string} sheetName
- * @param {string} id
- * @param {Array} record
- */
-function updateRecord(sheetName, id, record) {
 
-  const row = findRowById(sheetName, id);
-
-  if (row === -1) {
-
-    throw new Error("Record not found.");
-
-  }
-
-  getSheet(sheetName)
-    .getRange(
-      row,
-      1,
-      1,
-      record.length
-    )
-    .setValues([record]);
-
-}
-
-
-/**
- * Deletes a record.
- *
- * @param {string} sheetName
- * @param {string} id
- */
-function deleteRecord(sheetName, id) {
-
-  const row = findRowById(sheetName, id);
-
-  if (row === -1) {
-
-    throw new Error("Record not found.");
-
-  }
-
-  getSheet(sheetName)
-    .deleteRow(row);
-
-}
-
-
-/**
- * Appends a complete record.
- *
- * @param {string} sheetName
- * @param {Array} record
- */
-function appendRecord(sheetName, record) {
-
-  appendRow(
-    sheetName,
-    record
-  );
-
-}

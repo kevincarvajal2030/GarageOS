@@ -75,4 +75,3 @@ function syncCustomerReference(event, sheet, row) {
 
 }
 
-
