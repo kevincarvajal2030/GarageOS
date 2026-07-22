@@ -5,14 +5,7 @@
  * ============================================================================
  *
  * Creates the GarageOS custom menu.
- *
- * This menu only contains administrative actions.
- * All CRUD operations are performed directly
- * from the Google Sheets interface.
- * ============================================================================
- */
-
-
+ * 
 /******************************************************************************
  * ON OPEN
  ******************************************************************************/
@@ -42,7 +35,7 @@ function createGarageOSMenu() {
     .addSeparator()
 
     .addItem(
-      "Run Setup",
+      "Vehicles Details", //Proximamente menu que mostrara la imagen del vehiculo que de la celda que selecciono el usuario.
       "runSetup"
     )
 

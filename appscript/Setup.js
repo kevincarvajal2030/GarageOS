@@ -27,8 +27,6 @@ function runSetup() {
 
   verifySheets();
 
-  updateDashboard();
-
   showToast(
     "GarageOS is ready.",
     APP.NAME
@@ -88,34 +86,6 @@ function verifySheets() {
 
 }
 
-
-/******************************************************************************
- * RESET
- ******************************************************************************/
-
-/**
- * Clears all application data.
- */
-function resetDatabase() {
-
-  clearTable(SHEETS.CUSTOMERS);
-
-  clearTable(SHEETS.VEHICLES);
-
-  clearTable(SHEETS.WORK_ORDERS);
-
-  clearTable(SHEETS.PARTS);
-
-  clearTable(SHEETS.PAYMENTS);
-
-  updateDashboard();
-
-  showToast(
-    "Database reset completed.",
-    APP.NAME
-  );
-
-}
 
 
 /******************************************************************************

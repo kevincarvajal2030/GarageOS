@@ -95,6 +95,6 @@ const APP = {
 
   NAME: "GarageOS",
 
-  VERSION: "1.0.0"
+  VERSION: "1.0.1" //7-22-2026
 
 };
