@@ -30,14 +30,6 @@ function getVehiclesByCustomer(customerId) {
     13
   ).getValues();
 
-  debug("SHEET_NAME", sheet.getName());
-
-  debug("FIRST_ROW", values[0]);
-
-  debug("SECOND_ROW", values[1]);
-
-  debug("TOTAL_ROWS", values.length);
-
   const vehicles = [];
 
   values.forEach(row => {
@@ -50,13 +42,7 @@ function getVehiclesByCustomer(customerId) {
     const year = String(row[6]).trim();
 
     // Columna M = Status
-    const status = String(row[12]).trim().toLowerCase();
-
-    debug("COMPARE", {
-      searching: customerId,
-      current: rowCustomerId,
-      match: rowCustomerId === customerId
-    });
+    const status = String(row[10]).trim().toLowerCase();
 
     if (rowCustomerId !== customerId) {
       return;

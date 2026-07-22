@@ -202,10 +202,15 @@ function validateCustomerStatusChange(sheet, row, config, event) {
 
 
 /**
-* Returns every customer name.
-*
-* @returns {string[]}
-*/
+ * Returns every ACTIVE customer full name.
+ *
+ * Used by:
+ * - Vehicles
+ * - Work Orders
+ * - Payments
+ *
+ * @returns {string[]}
+ */
 function getCustomerNames() {
 
   const sheet = SpreadsheetApp
@@ -218,32 +223,36 @@ function getCustomerNames() {
     return [];
   }
 
-  // B = First Name
-  // C = Last Name
-  // K = Status
-
   const values = sheet.getRange(
     TABLE.FIRST_DATA_ROW,
-    2,
+    1,
     lastRow - TABLE.FIRST_DATA_ROW + 1,
-    10
+    sheet.getLastColumn()
   ).getDisplayValues();
 
-  return values
-    .filter(row => {
+  const customers = [];
 
-      const firstName = String(row[0]).trim();
-      const lastName = String(row[1]).trim();
-      const status = String(row[9]).trim();
+  for (const row of values) {
 
-      return (
-        firstName &&
-        lastName &&
-        status === "Active"
-      );
+    const firstName = String(row[1]).trim();
+    const lastName  = String(row[2]).trim();
+    const status    = String(row[10]).trim();
 
-    })
-    .map(row => `${row[0].trim()} ${row[1].trim()}`);
+    if (
+      !firstName ||
+      !lastName ||
+      status !== "Active"
+    ) {
+      continue;
+    }
+
+    customers.push(
+      `${firstName} ${lastName}`
+    );
+
+  }
+
+  return customers;
 
 }
 
