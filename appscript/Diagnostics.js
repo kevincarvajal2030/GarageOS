@@ -1,10 +1,13 @@
 //Diagnostics.gs
 
-function testGenerateText() {
+/**
+ * Test text generation with Qwen
+ */
+function testQwenTextGeneration() {
 
-  const text = OpenAIService.generateText(
+  const text = QwenService.generateText(
 
-    "Respond only with: GarageOS connection successful."
+    "Respond only with: GarageOS Qwen connection successful."
 
   );
 
@@ -13,19 +16,24 @@ function testGenerateText() {
 }
 
 
-function testHealthCheck() {
+/**
+ * Test health check with Qwen
+ */
+function testQwenHealthCheck() {
 
     Logger.log(
 
-        OpenAIService.healthCheck()
+        QwenService.healthCheck()
 
     );
 
 }
 
 
-
-function testGenerateImage() {
+/**
+ * Test image generation with Qwen
+ */
+function testQwenGenerateImage() {
 
   const vehicle = {
 
@@ -40,11 +48,27 @@ function testGenerateImage() {
     PromptService.buildVehiclePrompt(vehicle);
 
   const response =
-    OpenAIService.generateImage(prompt);
+    QwenService.generateImage(prompt);
 
   Logger.log(
 
     JSON.stringify(response, null, 2)
+
+  );
+
+}
+
+
+/**
+ * Test Qwen image generation with simple prompt
+ */
+function testQwenImageSimple() {
+
+  const result = QwenService.testImageGeneration();
+
+  Logger.log(
+
+    JSON.stringify(result, null, 2)
 
   );
 

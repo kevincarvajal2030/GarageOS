@@ -109,13 +109,18 @@ const DRIVE = Object.freeze({
 
 });
 
+
+
 /**
- * API OPENAI
+ * API QWEN (Alibaba Cloud DashScope)
  */
-const OPENAI = Object.freeze({
+const QWEN = Object.freeze({
 
-    CHAT_MODEL: "gpt-5.1",
+    CHAT_MODEL: "qwen-turbo",
 
-    IMAGE_MODEL: "gpt-image-1"
+    IMAGE_MODEL: "wanx2.1-t2i-turbo"
 
 });
+
+
+
