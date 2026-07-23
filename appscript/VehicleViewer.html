@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cfcfcf;
+      border-radius: 10px;
+    }
+
+    .hero {
+
+      position: relative;
+
+      width: 100%;
+
+      height: 190px;
+
+      overflow: hidden;
+
+      background: #e5e5e5;
+
+    }
+
+    #vehicle-image {
+
+      width: 100%;
+
+      height: 100%;
+
+      object-fit: cover;
+
+      display: block;
+
+    }
+
+    .hero::after {
+
+      content: "";
+
+      position: absolute;
+
+      left: 0;
+
+      right: 0;
+
+      bottom: 0;
+
+      height: 80px;
+
+      background: linear-gradient(to top,
+          rgba(0, 0, 0, .70),
+          rgba(0, 0, 0, 0));
+
+    }
+
+    .title {
+
+      position: absolute;
+
+      left: 18px;
+
+      bottom: 18px;
+
+      z-index: 10;
+
+      color: white;
+
+    }
+
+    .title h1 {
+
+      font-size: 30px;
+
+      font-weight: 700;
+
+      line-height: 1.05;
+
+      text-shadow: 0 2px 8px rgba(0, 0, 0, .55);
+
+    }
+
+    .title p {
+
+      margin-top: 4px;
+
+      font-size: 14px;
+
+      opacity: .95;
+
+      text-shadow: 0 2px 6px rgba(0, 0, 0, .55);
+
+    }
+
+    .content {
+
+      padding: 18px;
+
+    }
+
+    .status {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      margin-bottom: 18px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+    }
+
+    .status-dot {
+
+      width: 10px;
+
+      height: 10px;
+
+      border-radius: 50%;
+
+      background: #25c43d;
+
+      animation: pulse 2s infinite;
+
+      flex-shrink: 0;
+
+    }
+
+    @keyframes pulse {
+
+      0% {
+
+        opacity: .35;
+
+        transform: scale(.85);
+
+      }
+
+      50% {
+
+        opacity: 1;
+
+        transform: scale(1.2);
+
+      }
+
+      100% {
+
+        opacity: .35;
+
+        transform: scale(.85);
+
+      }
+
+    }
+
+    .row {
+
+      padding: 14px 0;
+
+      border-bottom: 1px solid #ececec;
+
+    }
+
+    .label {
+
+      font-size: 11px;
+
+      letter-spacing: .08em;
+
+      color: #8b8b8b;
+
+      text-transform: uppercase;
+
+      margin-bottom: 4px;
+
+    }
+
+    .value {
+
+      font-size: 17px;
+
+      font-weight: 500;
+
+      color: #222;
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="hero">
+
+    <img
+        id="vehicle-image"
+        src=""
+    >
+
+    <div class="title">
+
+      <h1 id="vehicle-name">
+
+        Loading...
+
+      </h1>
+
+      <p id="vehicle-year">
+
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="content">
+
+    <div class="status">
+
+      <span class="status-dot"></span>
+
+      <span id="status">
+
+            Active
+
+        </span>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        Customer
+
+      </div>
+
+      <div class="value" id="customer">
+
+        -
+
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        License Plate
+
+      </div>
+
+      <div class="value" id="licensePlate">
+
+        -
+
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        Transmission
+
+      </div>
+
+      <div class="value" id="transmission">
+
+        -
+
+      </div>
+
+    </div>
+
+
+    <div class="row">
+
+      <div class="label">
+
+        Fuel Type
+
+      </div>
+
+      <div class="value" id="fuelType">
+
+        -
+
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        Color
+
+      </div>
+
+      <div class="value" id="color">
+
+        -
+
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        Make
+
+      </div>
+
+      <div class="value" id="make">
+
+        -
+
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        Model
+
+      </div>
+
+      <div class="value" id="model">
+
+        -
+
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div class="label">
+
+        Year
+
+      </div>
+
+      <div class="value" id="year">
+
+        -
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    /**
+ * ============================================================
+ * Loads the selected vehicle from Apps Script.
+ * ============================================================
+ */
+function loadVehicle(){
+
+    google.script.run
+        .withSuccessHandler(renderVehicle)
+        .getVehicleViewerData();
+
+}
+
+
+/**
+ * ============================================================
+ * Renders the selected vehicle.
+ * ============================================================
+ */
+function renderVehicle(vehicle){
+
+    if(!vehicle){
+
+        return;
+
+    }
+
+    document.getElementById("vehicle-name").textContent =
+        `${vehicle.make} ${vehicle.model}`;
+
+    document.getElementById("vehicle-year").textContent =
+        vehicle.year;
+
+    document.getElementById("customer").textContent =
+        vehicle.customerName;
+
+    document.getElementById("licensePlate").textContent =
+        vehicle.licensePlate || "-";
+
+    document.getElementById("transmission").textContent =
+        vehicle.transmission;
+
+    document.getElementById("fuelType").textContent =
+        vehicle.fuelType;
+
+    document.getElementById("color").textContent =
+        vehicle.color;
+
+    document.getElementById("make").textContent =
+        vehicle.make;
+
+    document.getElementById("model").textContent =
+        vehicle.model;
+
+    document.getElementById("year").textContent =
+        vehicle.year;
+
+    document.getElementById("status").textContent =
+        vehicle.status;
+
+
+       /*
+     * ------------------------------------------------------------
+     * Vehicle Image
+     * ------------------------------------------------------------
+     */
+
+    const image = document.getElementById("vehicle-image");
+
+    if (vehicle.imageFileId) {
+
+        image.src =
+            "https://drive.google.com/thumbnail?id=" +
+            vehicle.imageFileId +
+            "&sz=w1200";
+
+    } else {
+
+        image.src =
+            "https://placehold.co/1200x700/e8e8e8/8c8c8c?text=No+Image";
+
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * Status Color
+     * ------------------------------------------------------------
+     */
+
+    const dot = document.querySelector(".status-dot");
+
+    dot.style.animation = "pulse 2s infinite";
+
+    switch ((vehicle.status || "").toLowerCase()) {
+
+        case "active":
+
+            dot.style.background = "#24C451";
+
+            break;
+
+        case "in repair":
+
+            dot.style.background = "#3B82F6";
+
+            break;
+
+        case "waiting parts":
+
+            dot.style.background = "#F59E0B";
+
+            break;
+
+        case "archived":
+
+            dot.style.background = "#6B7280";
+
+            dot.style.animation = "none";
+
+            break;
+
+        case "inactive":
+
+            dot.style.background = "#9CA3AF";
+
+            dot.style.animation = "none";
+
+            break;
+
+        default:
+
+            dot.style.background = "#9CA3AF";
+
+            dot.style.animation = "none";
+
+    }
+
+}
+
+/*
+ * ============================================================
+ * Initialize
+ * ============================================================
+ */
+
+window.onload = loadVehicle;
+
+  </script>
+
+</body>
+
+</html>

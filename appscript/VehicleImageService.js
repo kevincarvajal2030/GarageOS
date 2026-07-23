@@ -1,0 +1,1 @@
+buildImageName(vehicle)

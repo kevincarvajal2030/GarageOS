@@ -76,10 +76,16 @@ const AutoRowEngine = (() => {
 
     processAutomaticFields(sheet, row, config);
 
+    // Work Order automatic fields
+    if (sheet.getName() === SHEETS.WORK_ORDERS) {
+      syncWorkOrderOpenDate(sheet, row);
+    }
+
     processValidations(sheet, row, config, event);
 
     processReferenceUpdates(sheet, config, event);
   }
+
 
   function processAutomaticFields(sheet, row, config) {
 

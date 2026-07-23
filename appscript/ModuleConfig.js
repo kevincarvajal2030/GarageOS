@@ -123,7 +123,9 @@ const ModuleConfig = (() => {
         Color: 9,
         FuelType: 10,
         Status: 11,
-        Notes: 12
+        Notes: 12,
+        VehicleName: 13,
+        ImageFileID: 14
 
       },
 
@@ -209,7 +211,6 @@ const ModuleConfig = (() => {
         "VehicleID",
         "MechanicName",
         "MechanicID",
-        "OpenDate",
 
       ],
 

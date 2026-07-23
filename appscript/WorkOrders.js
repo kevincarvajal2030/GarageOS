@@ -212,6 +212,71 @@ function syncWorkOrderMechanic(sheet, row) {
 }
 
 
+/**
+ * Automatically creates the Open Date when
+ * every required foreign key has been assigned.
+ *
+ * Work Orders:
+ * Customer ID
+ * Vehicle ID
+ * Mechanic ID
+ * ->
+ * Open Date
+ */
+function syncWorkOrderOpenDate(sheet, row) {
+
+  const config = ModuleConfig.get(sheet.getName());
+
+  if (!config) return;
+
+  const customerId = sheet
+    .getRange(row, config.fields.CustomerID)
+    .getDisplayValue()
+    .trim();
+
+  const vehicleId = sheet
+    .getRange(row, config.fields.VehicleID)
+    .getDisplayValue()
+    .trim();
+
+  const mechanicId = sheet
+    .getRange(row, config.fields.MechanicID)
+    .getDisplayValue()
+    .trim();
+
+  const openDateCell = sheet.getRange(
+    row,
+    config.fields.OpenDate
+  );
+
+  const currentOpenDate = openDateCell
+    .getDisplayValue()
+    .trim();
+
+  // Never overwrite an existing date.
+  if (currentOpenDate !== "") {
+    return;
+  }
+
+  // Wait until every foreign key exists.
+  if (
+    customerId === "" ||
+    vehicleId === "" ||
+    mechanicId === ""
+  ) {
+    return;
+  }
+
+  openDateCell.setValue(
+    Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      "MM/dd/yyyy"
+    )
+  );
+
+}
+
 
 
 function runWorkOrderBusinessValidations(sheet, row, config, event) {

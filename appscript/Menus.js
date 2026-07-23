@@ -35,8 +35,8 @@ function createGarageOSMenu() {
     .addSeparator()
 
     .addItem(
-      "Vehicles Details", //Proximamente menu que mostrara la imagen del vehiculo que de la celda que selecciono el usuario.
-      "runSetup"
+      "Vehicles Viewer",
+      "openVehicleViewerSidebar"
     )
 
     .addItem(
