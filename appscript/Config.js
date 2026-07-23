@@ -98,3 +98,24 @@ const APP = {
   VERSION: "1.0.1" //7-22-2026
 
 };
+
+
+/**
+ * Google Drive
+ */
+const DRIVE = Object.freeze({
+
+    IMAGE_EXTENSION: "png"
+
+});
+
+/**
+ * API OPENAI
+ */
+const OPENAI = Object.freeze({
+
+    CHAT_MODEL: "gpt-5.1",
+
+    IMAGE_MODEL: "gpt-image-1"
+
+});
