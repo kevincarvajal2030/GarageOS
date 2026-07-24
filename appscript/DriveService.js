@@ -1,8 +1,3 @@
-/**
- * GARAGE OS
- * DriveService.gs
- * Central service for Google Drive operations.
- */
 const DriveService = (() => {
 
   function getVehicleImagesFolderId() {
@@ -29,17 +24,22 @@ const DriveService = (() => {
     const filename = buildImageFilename(imageName);
     const files = getVehicleImagesFolder().getFilesByName(filename);
 
-    if (!files.hasNext()) return null;
+    return files.hasNext() ? files.next() : null;
+  }
 
-    return files.next();
+  function getFileById(fileId) {
+    try {
+      if (!fileId) return null;
+      return DriveApp.getFileById(fileId);
+    } catch (e) {
+      return null;
+    }
   }
 
   function saveImageBlob(imageName, blob) {
     const existingFile = findImage(imageName);
 
-    if (existingFile) {
-      return existingFile;
-    }
+    if (existingFile) return existingFile;
 
     const filename = buildImageFilename(imageName);
     const folder = getVehicleImagesFolder();
@@ -52,20 +52,23 @@ const DriveService = (() => {
     return file;
   }
 
+  function trashFile(fileId) {
+    const file = getFileById(fileId);
+
+    if (!file) return false;
+
+    file.setTrashed(true);
+    return true;
+  }
+
   return Object.freeze({
     getVehicleImagesFolderId,
     getVehicleImagesFolder,
+    buildImageFilename,
     findImage,
-    saveImageBlob
+    getFileById,
+    saveImageBlob,
+    trashFile
   });
 
 })();
-
-
-function testVehicleImagesFolder() {
-  const folder = DriveService.getVehicleImagesFolder();
-
-  Logger.log(folder.getName());
-  Logger.log(folder.getId());
-  Logger.log(folder.getUrl());
-}

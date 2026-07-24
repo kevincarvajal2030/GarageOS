@@ -1,7 +1,3 @@
-/**
- * GARAGE OS
- * VehicleImageService.gs
- */
 const VehicleImageService = (() => {
 
   function normalize(text) {
@@ -26,12 +22,16 @@ const VehicleImageService = (() => {
     ].filter(Boolean).join("-");
   }
 
-  function findExistingImage(vehicle) {
-    const imageName = buildImageName(vehicle);
+  function buildImageFilename(vehicle) {
+    return DriveService.buildImageFilename(buildImageName(vehicle));
+  }
 
-    if (!imageName) return null;
+  function isImageFileCurrent(vehicle, fileId) {
+    const file = DriveService.getFileById(fileId);
 
-    return DriveService.findImage(imageName);
+    if (!file) return false;
+
+    return file.getName() === buildImageFilename(vehicle);
   }
 
   function ensureVehicleImage(vehicle) {
@@ -51,7 +51,6 @@ const VehicleImageService = (() => {
         success: true,
         fileId: existingFile.getId(),
         fileName: existingFile.getName(),
-        fileUrl: existingFile.getUrl(),
         source: "drive-cache"
       };
     }
@@ -73,7 +72,8 @@ const VehicleImageService = (() => {
   return Object.freeze({
     normalize,
     buildImageName,
-    findExistingImage,
+    buildImageFilename,
+    isImageFileCurrent,
     ensureVehicleImage
   });
 
