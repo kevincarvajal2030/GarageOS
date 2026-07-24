@@ -138,15 +138,26 @@ const QwenService = (() => {
 
   /**
    * Generates an image using Qwen/DashScope API.
-   * Uses the wanx2.1-t2i-turbo model for image generation.
+   * Uses the wanx-v1 model for image generation (available in free tier).
    */
   function generateImage(prompt, options = {}) {
 
-    const size = options.size || "1024x1024";
+    // Formato correcto: "1024*1024" no "1024x1024"
+    const size = options.size || "1024*1024";
     const n = options.n || 1;
 
-    // Parse size into width and height
-    const [width, height] = size.split("x").map(Number);
+    // Parse size into width and height (soporta ambos formatos: "1024*1024" o "1024x1024")
+    let width, height;
+    if (size.includes("x")) {
+      [width, height] = size.split("x").map(Number);
+    } else {
+      [width, height] = size.split("*").map(Number);
+    }
+
+    // Formato requerido por la API: "ancho*alto"
+    const formattedSize = `${width}*${height}`;
+
+    Logger.log(`Generando imagen con modelo ${QWEN.IMAGE_MODEL}, tamaño: ${formattedSize}`);
 
     const response = request(
 
@@ -161,7 +172,7 @@ const QwenService = (() => {
         },
 
         parameters: {
-          size: `${width}*${height}`,
+          size: formattedSize,
           n: n,
           style: "<auto>"
         }
@@ -170,15 +181,17 @@ const QwenService = (() => {
 
     );
 
+    Logger.log(`Respuesta inicial - Status: ${response.status}`);
+
     if (response.status !== 200) {
 
-      throw new Error(
+      const errorMsg = response.body.message ||
+                       response.body.error?.message ||
+                       JSON.stringify(response.body);
 
-        response.body.message ||
-        response.body.error?.message ||
-        "Unknown Qwen image generation error."
+      Logger.log(`Error en generación de imagen: ${errorMsg}`);
 
-      );
+      throw new Error(errorMsg);
 
     }
 
@@ -186,6 +199,7 @@ const QwenService = (() => {
     // Need to poll for results
     if (response.body.output && response.body.output.task_id) {
 
+      Logger.log(`Task ID recibido: ${response.body.output.task_id}. Esperando resultados...`);
       return waitForImageTask(response.body.output.task_id);
 
     }

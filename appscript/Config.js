@@ -118,7 +118,8 @@ const QWEN = Object.freeze({
 
     CHAT_MODEL: "qwen-turbo",
 
-    IMAGE_MODEL: "wanx2.1-t2i-turbo"
+    // Modelo de imagen actualizado - wanx-v1 está disponible en cuentas gratuitas
+    IMAGE_MODEL: "wanx-v1"
 
 });
 
