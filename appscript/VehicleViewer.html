@@ -368,12 +368,22 @@ function loadVehicle() {
 
   isLoadingVehicle = true;
 
+  console.log("VehicleViewer -> solicitando datos...");
+
   google.script.run
     .withSuccessHandler(function(vehicle) {
+
+      console.log("SUCCESS:");
+      console.log(vehicle);
+
       isLoadingVehicle = false;
       renderVehicle(vehicle);
     })
     .withFailureHandler(function(error) {
+
+      console.error("FAILURE:");
+      console.error(error);
+
       isLoadingVehicle = false;
       console.error(error);
     })
@@ -382,6 +392,10 @@ function loadVehicle() {
 
 
 function renderVehicle(vehicle) {
+
+  console.log("RENDER");
+  console.log(vehicle);
+
   if (!vehicle) return;
 
   const signature = [

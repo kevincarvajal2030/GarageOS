@@ -66,13 +66,28 @@ function createWorkOrderObject(row) {
 
 
 function getVehicleViewerDataFast() {
+
+  Logger.log("================================");
+  Logger.log("getVehicleViewerDataFast()");
+  Logger.log("================================");
+
   const context = getSelectedVehicleContext_();
 
+  Logger.log(context);
+
   if (!context || !context.vehicle) {
+
+    Logger.log("NO CONTEXT");
+
     return null;
+
   }
 
+  Logger.log("Vehicle encontrado:");
+  Logger.log(context.vehicle.vehicleId);
+
   return prepareVehicleForViewer_(context);
+
 }
 
 
@@ -109,6 +124,12 @@ function generateSelectedVehicleImage(vehicleId, expectedImageName) {
 function getSelectedVehicleContext_() {
   const ss = SpreadsheetApp.getActive();
   const sheet = ss.getActiveSheet();
+
+  Logger.log("Hoja activa:");
+  Logger.log(sheet.getName());
+
+  Logger.log("Fila activa:");
+  Logger.log(sheet.getActiveRange().getRow());
 
   switch (sheet.getName()) {
     case SHEETS.VEHICLES:
@@ -158,7 +179,16 @@ function getSelectedVehicleFromWorkOrders_(sheet) {
     .getValues()[0];
 
   const workOrder = createWorkOrderObject(row);
+
+  Logger.log("========== WORK ORDER ==========");
+
+  Logger.log(JSON.stringify(workOrder));
+
   const vehicleContext = findVehicleForWorkOrder_(workOrder);
+
+  Logger.log("Vehicle Context:");
+
+  Logger.log(vehicleContext);
 
   if (!vehicleContext) return null;
 
@@ -171,6 +201,26 @@ function getSelectedVehicleFromWorkOrders_(sheet) {
 
 
 function findVehicleForWorkOrder_(workOrder) {
+
+  Logger.log("========== findVehicleForWorkOrder ==========");
+
+  Logger.log("VehicleID:");
+
+  Logger.log(workOrder.vehicleId);
+
+  Logger.log("VehicleName:");
+
+  Logger.log(workOrder.vehicleName);
+
+  Logger.log("CustomerID:");
+
+  Logger.log(workOrder.customerId);
+
+  Logger.log("CustomerName:");
+
+  Logger.log(workOrder.customerName);
+
+
   if (workOrder.vehicleId) {
     const byId = findVehicleById_(workOrder.vehicleId);
     if (byId) return byId;
@@ -186,6 +236,10 @@ function findVehicleForWorkOrder_(workOrder) {
 
 function findVehicleById_(vehicleId) {
   vehicleId = String(vehicleId || "").trim();
+
+  Logger.log("========== findVehicleById ==========");
+
+  Logger.log(vehicleId);
 
   if (!vehicleId) return null;
 
@@ -297,6 +351,9 @@ function getDefaultVehicleContext_() {
 
 
 function prepareVehicleForViewer_(context) {
+  
+  Logger.log("ENTRO A prepareVehicleForViewer");
+
   const vehicle = context.vehicle;
   const expectedImageName = VehicleImageService.buildImageName(vehicle);
   const expectedFilename = DriveService.buildImageFilename(expectedImageName);
@@ -329,6 +386,8 @@ function prepareVehicleForViewer_(context) {
       imageStatus: "ready"
     });
   }
+
+  Logger.log(JSON.stringify(result));
 
   return Object.assign({}, vehicle, {
     imageFileId: "",
