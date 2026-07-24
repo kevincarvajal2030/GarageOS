@@ -1,3 +1,5 @@
+//VehicleImageService.gs
+
 const VehicleImageService = (() => {
 
   function normalize(text) {

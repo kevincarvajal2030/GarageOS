@@ -1,3 +1,5 @@
+<!-- VehicleViewer.html -->
+
 <!DOCTYPE html>
 <html>
 
@@ -413,6 +415,7 @@ function pollSelection() {
 
 function renderVehicle(vehicle) {
 
+  console.log("A");
   console.log("RENDER");
   console.log(vehicle);
 
@@ -434,6 +437,8 @@ function renderVehicle(vehicle) {
 
   if (signature === lastVehicleSignature) return;
 
+  console.log("B");
+
   lastVehicleSignature = signature;
 
   setText("vehicle-name", `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "Vehicle");
@@ -448,8 +453,16 @@ function renderVehicle(vehicle) {
   setText("year", vehicle.year || "-");
   setText("status", vehicle.status || "Unknown");
 
+  console.log("C");
+
   renderStatus(vehicle.status);
+
+  console.log("D");
+
+
   renderImage(vehicle);
+
+  console.log("E");
 }
 
 
@@ -595,7 +608,7 @@ let selectionPollTimer = null;
 
 window.onload = function() {
   loadVehicle();
-  selectionPollTimer = setInterval(pollSelection, 1000);
+  //selectionPollTimer = setInterval(pollSelection, 1000);
 };
 
 window.onunload = function() {

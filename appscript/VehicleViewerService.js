@@ -1,3 +1,5 @@
+//VehicleViewerService.gs
+
 function openVehicleViewerSidebar() {
   const html = HtmlService
     .createHtmlOutputFromFile("VehicleViewer")
@@ -164,15 +166,21 @@ function getSelectedVehicleContext_() {
   Logger.log(sheet.getActiveRange().getRow());
 
   switch (sheet.getName()) {
+
     case SHEETS.VEHICLES:
+
       return getSelectedVehicleFromVehicles_(sheet);
 
     case SHEETS.WORK_ORDERS:
+
       return getSelectedVehicleFromWorkOrders_(sheet);
 
     default:
+
       return getDefaultVehicleContext_();
+
   }
+
 }
 
 
@@ -306,6 +314,20 @@ function findVehicleById_(vehicleId) {
     .getRange(rowNumber, 1, 1, sheet.getLastColumn())
     .getValues()[0];
 
+
+  const vehicle = createVehicleObject(row);
+  debug(
+    "VehicleViewer",
+    "findVehicleById",
+    "FOUND",
+    {
+      row: rowNumber,
+      vehicleId: vehicle.vehicleId,
+      imageFileId: vehicle.imageFileId
+    }
+  );
+
+
   return {
     vehicle: createVehicleObject(row),
     vehicleRow: rowNumber
@@ -383,12 +405,17 @@ function getDefaultVehicleContext_() {
 
 
 function prepareVehicleForViewer_(context) {
-  
-  Logger.log("ENTRO A prepareVehicleForViewer");
 
   const vehicle = context.vehicle;
   const expectedImageName = VehicleImageService.buildImageName(vehicle);
+
+  Logger.log("expectedImageName:");
+  Logger.log(expectedImageName);
+
   const expectedFilename = DriveService.buildImageFilename(expectedImageName);
+
+  Logger.log("expectedFilename:");
+  Logger.log(expectedFilename);
 
   if (vehicle.imageFileId) {
     const file = DriveService.getFileById(vehicle.imageFileId);
@@ -418,6 +445,17 @@ function prepareVehicleForViewer_(context) {
       imageStatus: "ready"
     });
   }
+
+  debug(
+    "VehicleViewer",
+    "prepareVehicleForViewer",
+    "RETURN",
+    {
+      needsGeneration: true,
+      imageStatus: "needs-generation",
+      expectedImageName: expectedImageName
+    }
+  );
 
   return Object.assign({}, vehicle, {
     imageFileId: "",
