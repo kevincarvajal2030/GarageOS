@@ -209,6 +209,11 @@ function getSelectedVehicleFromVehicles_(sheet) {
 }
 
 
+/**
+ * Obtiene el contexto del vehículo seleccionado desde la hoja de Work Orders.
+ * @param {Sheet} sheet - La hoja de Work Orders activa.
+ * @returns {Object} El contexto del vehículo (vehicle, vehicleRow, workOrder).
+ */
 function getSelectedVehicleFromWorkOrders_(sheet) {
   const activeRange = sheet.getActiveRange();
 
@@ -216,53 +221,60 @@ function getSelectedVehicleFromWorkOrders_(sheet) {
 
   const rowNumber = activeRange.getRow();
 
+  // Validar que no sea la fila de encabezados
   if (rowNumber < TABLE.FIRST_DATA_ROW) return getDefaultVehicleContext_();
 
-  const row = sheet
+  // IMPORTANTE: Usar getDisplayValues() para leer correctamente los Dropdowns
+  // getValues() a veces devuelve el ID interno o null en validaciones de datos
+  const rowValues = sheet
     .getRange(rowNumber, 1, 1, sheet.getLastColumn())
-    .getValues()[0];
+    .getDisplayValues()[0];
 
-  const workOrder = createWorkOrderObject(row);
+  const workOrder = createWorkOrderObject(rowValues);
 
-  Logger.log("========== WORK ORDER ==========");
+  Logger.log("========== WORK ORDER DETECTADA ==========");
+  Logger.log("Fila: " + rowNumber);
+  Logger.log("Vehicle Name (Dropdown): '" + workOrder.vehicleName + "'");
+  Logger.log("Customer Name: '" + workOrder.customerName + "'");
+  Logger.log("Vehicle ID (Raw): '" + workOrder.vehicleId + "'");
 
-  Logger.log(JSON.stringify(workOrder));
+  // Intentar encontrar el vehículo en la hoja 02_Vehicles
+  let vehicleContext = findVehicleForWorkOrder_(workOrder);
 
-  const vehicleContext = findVehicleForWorkOrder_(workOrder);
-
-  Logger.log("Vehicle Context:");
-
-  Logger.log(vehicleContext);
-
-  if (!vehicleContext) {
-    // Si no se encuentra el vehículo, crear un contexto vacío con los datos de la work order
-    return {
-      vehicle: {
-        vehicleId: workOrder.vehicleId || "",
-        customerId: workOrder.customerId || "",
-        customerName: workOrder.customerName || "",
-        licensePlate: "",
-        make: "",
-        model: "",
-        year: "",
-        transmission: "",
-        color: "",
-        fuelType: "",
-        status: "",
-        notes: "",
-        vehicleName: workOrder.vehicleName || "",
-        displayName: workOrder.vehicleName || "Vehicle not found",
-        imageFileId: "",
-        imageStatus: "ready"
-      },
-      vehicleRow: null,
-      workOrder: workOrder
-    };
+  // CASO DE ÉXITO: Se encontró el vehículo
+  if (vehicleContext && vehicleContext.vehicle) {
+    vehicleContext.workOrder = workOrder;
+    Logger.log("Vehículo encontrado: " + vehicleContext.vehicle.displayName);
+    return vehicleContext;
   }
 
+  // CASO DE FALLA: No se encontró el vehículo, pero construimos un fallback robusto
+  // Esto evita el "Loading..." infinito y muestra "No vehicle selected" o datos parciales
+  Logger.log("Vehículo NO encontrado en 02_Vehicles. Usando fallback.");
+  
+  const fallbackVehicle = {
+    vehicleId: workOrder.vehicleId || "",
+    customerId: workOrder.customerId || "",
+    customerName: workOrder.customerName || "Unknown Customer",
+    licensePlate: "",
+    make: "",
+    model: "",
+    year: "",
+    transmission: "",
+    color: "",
+    fuelType: "",
+    status: workOrder.status || "",
+    notes: "",
+    // Usar el nombre del dropdown tal cual se lee
+    vehicleName: workOrder.vehicleName || "", 
+    displayName: workOrder.vehicleName ? workOrder.vehicleName : "No vehicle selected",
+    imageFileId: "",
+    imageStatus: "ready" // Importante para que el viewer no espere una imagen
+  };
+  
   return {
-    vehicle: vehicleContext.vehicle,
-    vehicleRow: vehicleContext.vehicleRow,
+    vehicle: fallbackVehicle,
+    vehicleRow: null, // Indica que no hay fila directa en Vehicles
     workOrder: workOrder
   };
 }
@@ -294,11 +306,26 @@ function findVehicleForWorkOrder_(workOrder) {
     if (byId) return byId;
   }
 
-  return findVehicleByNameAndCustomer_(
-    workOrder.vehicleName,
-    workOrder.customerId,
-    workOrder.customerName
-  );
+  // Si hay vehicleName, buscar por nombre y cliente
+  if (workOrder.vehicleName) {
+    return findVehicleByNameAndCustomer_(
+      workOrder.vehicleName,
+      workOrder.customerId,
+      workOrder.customerName
+    );
+  }
+
+  // Si no hay vehicleId ni vehicleName, buscar solo por cliente
+  if (workOrder.customerId || workOrder.customerName) {
+    return findVehicleByNameAndCustomer_(
+      "",
+      workOrder.customerId,
+      workOrder.customerName
+    );
+  }
+
+  return null;
+
 }
 
 
@@ -368,11 +395,11 @@ function findVehicleByNameAndCustomer_(vehicleName, customerId, customerName) {
   customerId = String(customerId || "").trim();
   customerName = String(customerName || "").trim();
 
-  if (!vehicleName) return null;
-
   const sheet = SpreadsheetApp
     .getActive()
     .getSheetByName(SHEETS.VEHICLES);
+
+  if (!sheet) return null;
 
   const lastRow = sheet.getLastRow();
 
@@ -390,15 +417,28 @@ function findVehicleByNameAndCustomer_(vehicleName, customerId, customerName) {
   for (let i = 0; i < values.length; i++) {
     const vehicle = createVehicleObject(values[i]);
 
-    const sameVehicle =
-      vehicle.displayName.toLowerCase() === vehicleName.toLowerCase() ||
-      vehicle.vehicleName.toLowerCase() === vehicleName.toLowerCase();
+    let sameVehicle = false;
+    
+    if (vehicleName) {
+      sameVehicle =
+        vehicle.displayName.toLowerCase() === vehicleName.toLowerCase() ||
+        vehicle.vehicleName.toLowerCase() === vehicleName.toLowerCase();
+    }
 
     const sameCustomer =
       !customerId ||
       vehicle.customerId === customerId ||
-      vehicle.customerName === customerName;
+      vehicle.customerName.toLowerCase() === customerName.toLowerCase();
 
+    // Si no hay vehicleName, buscar solo por cliente
+    if (!vehicleName && sameCustomer) {
+      return {
+        vehicle: vehicle,
+        vehicleRow: TABLE.FIRST_DATA_ROW + i
+      };
+    }
+    
+    // Si hay vehicleName, debe coincidir vehículo Y cliente
     if (sameVehicle && sameCustomer) {
       return {
         vehicle: vehicle,
@@ -416,9 +456,59 @@ function getDefaultVehicleContext_() {
     .getActive()
     .getSheetByName(SHEETS.VEHICLES);
 
+  if (!sheet) {
+    // Si no existe la hoja Vehicles, retornar un contexto vacío válido
+    return {
+      vehicle: {
+        vehicleId: "",
+        customerId: "",
+        customerName: "",
+        licensePlate: "",
+        make: "",
+        model: "",
+        year: "",
+        transmission: "",
+        color: "",
+        fuelType: "",
+        status: "",
+        notes: "",
+        vehicleName: "",
+        displayName: "No vehicle selected",
+        imageFileId: "",
+        imageStatus: "ready"
+      },
+      vehicleRow: null,
+      workOrder: null
+    };
+  }
+
   const lastRow = sheet.getLastRow();
 
-  if (lastRow < TABLE.FIRST_DATA_ROW) return null;
+  if (lastRow < TABLE.FIRST_DATA_ROW) {
+    // Si no hay datos, retornar un contexto vacío válido
+    return {
+      vehicle: {
+        vehicleId: "",
+        customerId: "",
+        customerName: "",
+        licensePlate: "",
+        make: "",
+        model: "",
+        year: "",
+        transmission: "",
+        color: "",
+        fuelType: "",
+        status: "",
+        notes: "",
+        vehicleName: "",
+        displayName: "No vehicles available",
+        imageFileId: "",
+        imageStatus: "ready"
+      },
+      vehicleRow: null,
+      workOrder: null
+    };
+  }
 
   const row = sheet
     .getRange(TABLE.FIRST_DATA_ROW, 1, 1, sheet.getLastColumn())
