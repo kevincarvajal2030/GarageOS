@@ -67,26 +67,58 @@ function createWorkOrderObject(row) {
 
 function getVehicleViewerDataFast() {
 
-  Logger.log("================================");
-  Logger.log("getVehicleViewerDataFast()");
-  Logger.log("================================");
+  try {
 
-  const context = getSelectedVehicleContext_();
+    Logger.log("================================");
+    Logger.log("getVehicleViewerDataFast()");
+    Logger.log("================================");
 
-  Logger.log(context);
+    const context = getSelectedVehicleContext_();
 
-  if (!context || !context.vehicle) {
+    Logger.log(context);
 
-    Logger.log("NO CONTEXT");
+    if (!context || !context.vehicle) {
 
-    return null;
+      Logger.log("NO CONTEXT");
+
+      return null;
+
+    }
+
+    Logger.log("Vehicle encontrado:");
+    Logger.log(context.vehicle.vehicleId);
+
+    return prepareVehicleForViewer_(context);
+
+  } catch (err) {
+
+    Logger.log("ERROR en getVehicleViewerDataFast: " + err.message);
+
+    return { error: err.message };
 
   }
 
-  Logger.log("Vehicle encontrado:");
-  Logger.log(context.vehicle.vehicleId);
+}
 
-  return prepareVehicleForViewer_(context);
+
+/**
+ * Lightweight check used by the sidebar's polling loop.
+ * Does NOT touch Sheets ranges, Drive, or the image API — just reads
+ * a cache value written by onSelectionChange (Triggers.js). This is what
+ * lets the client poll cheaply and only call getVehicleViewerDataFast()
+ * when the selection has actually changed.
+ */
+function getVehicleViewerSelectionSignature() {
+
+  const cached = CacheService.getUserCache().get("vehicleViewerSelection");
+
+  if (cached) return cached;
+
+  // Fallback for the first load, before any onSelectionChange has fired yet.
+  const sheet = SpreadsheetApp.getActive().getActiveSheet();
+  const range = sheet.getActiveRange();
+
+  return sheet.getName() + "|" + (range ? range.getRow() : 0);
 
 }
 
@@ -386,8 +418,6 @@ function prepareVehicleForViewer_(context) {
       imageStatus: "ready"
     });
   }
-
-  Logger.log(JSON.stringify(result));
 
   return Object.assign({}, vehicle, {
     imageFileId: "",

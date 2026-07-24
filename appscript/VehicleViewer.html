@@ -358,6 +358,7 @@
 
   <script>
     let lastVehicleSignature = "";
+let lastPolledSignature = "";
 let activeImageRequestKey = "";
 let isLoadingVehicle = false;
 let progressTimer = null;
@@ -391,12 +392,38 @@ function loadVehicle() {
 }
 
 
+function pollSelection() {
+
+  google.script.run
+    .withSuccessHandler(function(signature) {
+
+      if (signature === lastPolledSignature) return;
+
+      lastPolledSignature = signature;
+      loadVehicle();
+
+    })
+    .withFailureHandler(function(error) {
+      console.error("pollSelection FAILURE:", error);
+    })
+    .getVehicleViewerSelectionSignature();
+
+}
+
+
 function renderVehicle(vehicle) {
 
   console.log("RENDER");
   console.log(vehicle);
 
   if (!vehicle) return;
+
+  if (vehicle.error) {
+    stopProgress();
+    setText("vehicle-name", "Error al cargar");
+    setText("status", vehicle.error);
+    return;
+  }
 
   const signature = [
     vehicle.vehicleId,
@@ -564,9 +591,15 @@ function setText(id, value) {
 }
 
 
+let selectionPollTimer = null;
+
 window.onload = function() {
   loadVehicle();
-  setInterval(loadVehicle, 900);
+  selectionPollTimer = setInterval(pollSelection, 1000);
+};
+
+window.onunload = function() {
+  if (selectionPollTimer) clearInterval(selectionPollTimer);
 };
   </script>
 
