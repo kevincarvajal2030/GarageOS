@@ -1,131 +1,155 @@
-//Diagnostics.gs
+
+// Diagnostics.js
+// Archivo para pruebas y diagnóstico de los servicios de IA.
+//
+// SERVICIOS ACTIVOS:
+// - Pollinations.ai (Imágenes Gratuitas - SIN API KEY)
 
 /**
- * Test text generation with Qwen
+ * Ejecuta todas las pruebas de los servicios activos actualmente.
  */
-function testQwenTextGeneration() {
+function runAllActiveTests() {
+  Logger.log("=== INICIANDO SUITE DE PRUEBAS ACTIVA ===");
 
-  const text = QwenService.generateText(
+  try {
+    testPollinationsGeneration();
+  } catch (e) {
+    Logger.log("Error en prueba Pollinations: " + e.toString());
+  }
 
-    "Respond only with: GarageOS Qwen connection successful."
-
-  );
-
-  Logger.log(text);
-
+  Logger.log("=== SUITE DE PRUEBAS FINALIZADA ===");
 }
 
+/**
+ * =============================================================================
+ * PRUEBAS PARA POLLINATIONS.AI (IMÁGENES GRATUITAS)
+ * =============================================================================
+ */
 
 /**
- * Test health check with Qwen
+ * Prueba básica de generación de imagen con Pollinations.
+ * No requiere API Key.
  */
-function testQwenHealthCheck() {
+function testPollinationsGeneration() {
+  Logger.log("--- Iniciando prueba de generación de imagen (Pollinations) ---");
 
-    Logger.log(
+  var prompt = "A futuristic cyberpunk city with neon lights, realistic, 8k";
+  Logger.log("Generando imagen con prompt: '" + prompt + "'");
 
-        QwenService.healthCheck()
+  try {
+    var result = PollinationsService.generateImage(prompt, {
+      width: 1024,
+      height: 1024,
+      model: 'flux' // Modelo recomendado para calidad/velocidad
+    });
 
-    );
-
+    if (result.success) {
+      Logger.log("¡ÉXITO! Imagen generada correctamente.");
+      Logger.log("URL de la imagen: " + result.url);
+      Logger.log("Modelo utilizado: " + (result.model || 'default'));
+      Logger.log("Haz clic aquí para ver la imagen: " + result.url);
+    } else {
+      Logger.log("Fallo en la generación: " + (result.error || "Error desconocido"));
+    }
+  } catch (e) {
+    Logger.log("Excepción durante la generación: " + e.toString());
+  }
 }
 
+/**
+ * Prueba de generación y guardado en Google Drive.
+ * Requiere permisos de escritura en Drive.
+ */
+function testPollinationsToDrive() {
+  Logger.log("--- Iniciando prueba de guardado en Drive (Pollinations) ---");
+
+  var prompt = "A cute robot holding a flower in a garden, Pixar style";
+  Logger.log("Generando y guardando imagen: '" + prompt + "'");
+
+  try {
+    // Intenta guardar en la carpeta raíz o una específica si se proporciona ID
+    var folderId = null; // Deja null para usar la raíz, o pon un ID de carpeta
+
+    var result = PollinationsService.generateImageToDrive(prompt, {
+      width: 1024,
+      height: 1024,
+      model: 'flux-realism'
+    }, folderId);
+
+    if (result.success) {
+      Logger.log("¡ÉXITO! Imagen guardada en Drive.");
+      Logger.log("Nombre del archivo: " + result.fileName);
+      Logger.log("ID del archivo: " + result.fileId);
+      Logger.log("URL de visualización: " + result.viewUrl);
+    } else {
+      Logger.log("Fallo al guardar en Drive: " + (result.error || "Error desconocido"));
+    }
+  } catch (e) {
+    Logger.log("Excepción al guardar en Drive: " + e.toString());
+  }
+}
 
 /**
- * Test image generation with Qwen
+ * Prueba iterativa de diferentes modelos disponibles en Pollinations.
  */
-function testQwenGenerateImage() {
+function testPollinationsModels() {
+  Logger.log("--- Probando diferentes modelos de Pollinations ---");
 
-  const vehicle = {
+  var models = ['flux', 'flux-realism', 'stable-diffusion-xl', 'turbo'];
+  var prompt = "A golden trophy on a pedestal";
 
+  models.forEach(function(model) {
+    Logger.log("Probando modelo: " + model);
+    try {
+      var result = PollinationsService.generateImage(prompt, {
+        width: 512, // Tamaño reducido para prueba rápida
+        height: 512,
+        model: model
+      });
+
+      if (result.success) {
+        Logger.log("  -> " + model + ": OK (URL: " + result.url + ")");
+      } else {
+        Logger.log("  -> " + model + ": FALLÓ (" + result.error + ")");
+      }
+    } catch (e) {
+      Logger.log("  -> " + model + ": ERROR (" + e.toString() + ")");
+    }
+  });
+
+  Logger.log("Prueba de modelos finalizada.");
+}
+
+/**
+ * Prueba de generación de imagen de vehículo con Pollinations.
+ */
+function testVehicleImageWithPollinations() {
+  Logger.log("--- Iniciando prueba de imagen de vehículo (Pollinations) ---");
+
+  var vehicle = {
     make: "Toyota",
     model: "Supra",
     year: 2024,
     color: "Red"
-
   };
 
-  const prompt =
-    PromptService.buildVehiclePrompt(vehicle);
+  var prompt = PromptService.buildVehiclePrompt(vehicle);
+  Logger.log("Prompt generado: " + prompt);
 
-  const response =
-    QwenService.generateImage(prompt);
-
-  Logger.log(
-
-    JSON.stringify(response, null, 2)
-
-  );
-
-}
-
-
-/**
- * Test Qwen image generation with simple prompt
- */
-function testQwenImageSimple() {
-
-  const result = QwenService.testImageGeneration();
-
-  Logger.log(
-
-    JSON.stringify(result, null, 2)
-
-  );
-
-}
-
-
-/**
- * Test Qwen connection and available models
- * Esta función prueba la conexión con diferentes modelos de imagen
- */
-function testQwenConnectionFull() {
-
-  Logger.log("=== INICIANDO PRUEBA COMPLETA DE CONEXIÓN QWEN ===");
-
-  // Prueba 1: Verificar configuración
-  Logger.log("1. Verificando configuración...");
-  Logger.log(`   Modelo de chat configurado: ${QWEN.CHAT_MODEL}`);
-  Logger.log(`   Modelo de imagen configurado: ${QWEN.IMAGE_MODEL}`);
-
-  // Prueba 2: Generación de texto
-  Logger.log("\n2. Probando generación de texto...");
   try {
-    const textResult = QwenService.generateText("Responde solo 'OK' si funciona");
-    Logger.log(`   Resultado texto: ${textResult}`);
-  } catch (e) {
-    Logger.log(`   Error texto: ${e.message}`);
-  }
+    var result = PollinationsService.generateImage(prompt, {
+      width: 1024,
+      height: 1024,
+      model: 'flux-realism'
+    });
 
-  // Prueba 3: Generación de imagen con modelo actual
-  Logger.log("\n3. Probando generación de imagen con modelo actual...");
-  try {
-    const imageResult = QwenService.generateImage(
-      "A simple blue circle on white background",
-      { size: "1024*1024" }
-    );
-    Logger.log(`   Resultado imagen: ${JSON.stringify(imageResult)}`);
-  } catch (e) {
-    Logger.log(`   Error imagen: ${e.message}`);
-
-    // Si falla, intentar con otros modelos comunes
-    Logger.log("\n4. Intentando con otros modelos de imagen...");
-    const alternativeModels = ["wanx-v1", "wanx2.1-t2i-turbo", "wanx2.0-t2i-turbo"];
-
-    for (const model of alternativeModels) {
-      Logger.log(`   Probando modelo: ${model}...`);
-      try {
-        // Temporalmente cambiar el modelo en config no es posible,
-        // pero podemos reportar cuáles intentar
-        Logger.log(`     - ${model}: Deberías probar este modelo manualmente`);
-      } catch (e) {
-        Logger.log(`     - ${model}: Falló - ${e.message}`);
-      }
+    if (result.success) {
+      Logger.log("¡ÉXITO! Imagen de vehículo generada.");
+      Logger.log("URL: " + result.url);
+    } else {
+      Logger.log("Fallo: " + (result.error || "Error desconocido"));
     }
+  } catch (e) {
+    Logger.log("Excepción: " + e.toString());
   }
-
-  Logger.log("\n=== PRUEBA COMPLETADA ===");
 }
-
-
-

@@ -111,17 +111,4 @@ const DRIVE = Object.freeze({
 
 
 
-/**
- * API QWEN (Alibaba Cloud DashScope)
- */
-const QWEN = Object.freeze({
-
-    CHAT_MODEL: "qwen-turbo",
-
-    // Modelo de imagen actualizado - wanx-v1 está disponible en cuentas gratuitas
-    IMAGE_MODEL: "wanx-v1"
-
-});
-
-
 
