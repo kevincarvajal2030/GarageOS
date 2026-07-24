@@ -374,23 +374,25 @@ function loadVehicle() {
   console.log("VehicleViewer -> solicitando datos...");
 
   google.script.run
-    .withSuccessHandler(function(vehicle) {
+  .withSuccessHandler(function(vehicle) {
 
-      console.log("SUCCESS:");
-      console.log(vehicle);
+    isLoadingVehicle = false;
 
-      isLoadingVehicle = false;
-      renderVehicle(vehicle);
-    })
-    .withFailureHandler(function(error) {
+    console.log(typeof vehicle);
+    console.log(vehicle);
+    console.log(JSON.stringify(vehicle));
 
-      console.error("FAILURE:");
-      console.error(error);
+    renderVehicle(vehicle);
 
-      isLoadingVehicle = false;
-      console.error(error);
-    })
-    .getVehicleViewerDataFast();
+  })
+  .withFailureHandler(function(error) {
+
+    console.error(error);
+
+    isLoadingVehicle = false;
+
+  })
+  .getVehicleViewerDataFast();
 }
 
 
@@ -414,6 +416,8 @@ function pollSelection() {
 
 
 function renderVehicle(vehicle) {
+
+  stopProgress();
 
   console.log("A");
   console.log("RENDER");
@@ -599,21 +603,47 @@ function renderStatus(status) {
 }
 
 
-function setText(id, value) {
-  document.getElementById(id).textContent = value;
+  function setText(id, value) {
+    document.getElementById(id).textContent = value;
+  }
+
+
+  window.onload = function () {
+
+    loadVehicle();
+
+    setInterval(pollSelection, 3000);
+
+  };
+
+
+  function pollSelection() {
+
+    google.script.run.withSuccessHandler(function(signature) {
+
+      if (!signature) return;
+
+      if (signature === lastPolledSignature) return;
+
+      lastPolledSignature = signature;
+
+      loadVehicle();
+
+    })
+    .getVehicleViewerSelectionSignature();
+
+  }
+
+
+  function refreshVehicleViewer() {
+
+  console.log("Refresh solicitado.");
+
+  loadVehicle();
+
 }
 
 
-let selectionPollTimer = null;
-
-window.onload = function() {
-  loadVehicle();
-  //selectionPollTimer = setInterval(pollSelection, 1000);
-};
-
-window.onunload = function() {
-  if (selectionPollTimer) clearInterval(selectionPollTimer);
-};
   </script>
 
 </body>

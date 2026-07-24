@@ -90,7 +90,11 @@ function getVehicleViewerDataFast() {
     Logger.log("Vehicle encontrado:");
     Logger.log(context.vehicle.vehicleId);
 
-    return prepareVehicleForViewer_(context);
+    const result = prepareVehicleForViewer_(context);
+
+    Logger.log(JSON.stringify(result));
+
+    return result;
 
   } catch (err) {
 
