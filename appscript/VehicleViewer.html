@@ -359,298 +359,221 @@
   </div>
 
   <script>
-    let lastVehicleSignature = "";
-let lastPolledSignature = "";
-let activeImageRequestKey = "";
-let isLoadingVehicle = false;
-let progressTimer = null;
-let progressValue = 0;
-
-function loadVehicle() {
-  if (isLoadingVehicle) return;
-
-  isLoadingVehicle = true;
-
-  console.log("VehicleViewer -> solicitando datos...");
-
-  google.script.run
-  .withSuccessHandler(function(vehicle) {
-
-    isLoadingVehicle = false;
-
-    console.log(typeof vehicle);
-    console.log(vehicle);
-    console.log(JSON.stringify(vehicle));
-
-    renderVehicle(vehicle);
-
-  })
-  .withFailureHandler(function(error) {
-
-    console.error(error);
-
-    isLoadingVehicle = false;
-
-  })
-  .getVehicleViewerDataFast();
-}
-
-
-function pollSelection() {
-
-  google.script.run
-    .withSuccessHandler(function(signature) {
-
-      if (signature === lastPolledSignature) return;
-
-      lastPolledSignature = signature;
-      loadVehicle();
-
-    })
-    .withFailureHandler(function(error) {
-      console.error("pollSelection FAILURE:", error);
-    })
-    .getVehicleViewerSelectionSignature();
-
-}
-
-
-function renderVehicle(vehicle) {
-
-  stopProgress();
-
-  console.log("A");
-  console.log("RENDER");
-  console.log(vehicle);
-
-  if (!vehicle) {
-    setText("vehicle-name", "No vehicle selected");
-    setText("vehicle-year", "");
-    setText("customer", "-");
-    setText("status", "Unknown");
-    return;
-  }
-
-  if (vehicle.error) {
-    stopProgress();
-    setText("vehicle-name", "Error al cargar");
-    setText("status", vehicle.error);
-    return;
-  }
-
-  const signature = [
-    vehicle.vehicleId,
-    vehicle.expectedImageName,
-    vehicle.imageFileId,
-    vehicle.workOrder ? vehicle.workOrder.workOrderId : ""
-  ].join("|");
-
-  if (signature === lastVehicleSignature) return;
-
-  console.log("B");
-
-  lastVehicleSignature = signature;
-
-  setText("vehicle-name", `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "Vehicle");
-  setText("vehicle-year", vehicle.year || "");
-  setText("customer", vehicle.customerName || "-");
-  setText("licensePlate", vehicle.licensePlate || "-");
-  setText("transmission", vehicle.transmission || "-");
-  setText("fuelType", vehicle.fuelType || "-");
-  setText("color", vehicle.color || "-");
-  setText("make", vehicle.make || "-");
-  setText("model", vehicle.model || "-");
-  setText("year", vehicle.year || "-");
-  setText("status", vehicle.status || "Unknown");
-
-  console.log("C");
-
-  renderStatus(vehicle.status);
-
-  console.log("D");
-
-
-  renderImage(vehicle);
-
-  console.log("E");
-}
-
-
-function renderImage(vehicle) {
-  const image = document.getElementById("vehicle-image");
-
-  if (vehicle.imageFileId) {
-    stopProgress();
-
-    image.style.display = "block";
-    image.src =
-      "https://drive.google.com/thumbnail?id=" +
-      vehicle.imageFileId +
-      "&sz=w1200";
-
-    document.getElementById("image-loading").style.display = "none";
-    return;
-  }
-
-  image.removeAttribute("src");
-  image.style.display = "none";
-
-  showProgress();
-
-  if (vehicle.imageStatus === "needs-generation") {
-    startImageGeneration(vehicle);
-  }
-}
-
-
-function startImageGeneration(vehicle) {
-  const requestKey = vehicle.vehicleId + "|" + vehicle.expectedImageName;
-
-  if (activeImageRequestKey === requestKey) return;
-
-  activeImageRequestKey = requestKey;
-
-  google.script.run
-    .withSuccessHandler(function(result) {
-      if (activeImageRequestKey !== requestKey) return;
-
-      if (result && result.success && result.fileId) {
-        stopProgress();
-        loadVehicle();
-        return;
-      }
-
-      if (result && result.stale) {
-        loadVehicle();
-        return;
-      }
-
-      console.error(result);
-      stopProgress();
-    })
-    .withFailureHandler(function(error) {
-      if (activeImageRequestKey !== requestKey) return;
-
-      console.error(error);
-      stopProgress();
-    })
-    .generateSelectedVehicleImage(
-      vehicle.vehicleId,
-      vehicle.expectedImageName
-    );
-}
-
-
-function showProgress() {
-  const loading = document.getElementById("image-loading");
-  const fill = document.getElementById("progress-fill");
-
-  loading.style.display = "block";
-  progressValue = 8;
-  fill.style.width = progressValue + "%";
-
-  if (progressTimer) clearInterval(progressTimer);
-
-  progressTimer = setInterval(function() {
-    if (progressValue < 92) {
-      progressValue += Math.max(1, Math.round((92 - progressValue) * 0.12));
-      fill.style.width = progressValue + "%";
-    }
-  }, 450);
-}
-
-
-function stopProgress() {
-  const loading = document.getElementById("image-loading");
-  const fill = document.getElementById("progress-fill");
-
-  if (progressTimer) {
-    clearInterval(progressTimer);
-    progressTimer = null;
-  }
-
-  fill.style.width = "100%";
-
-  setTimeout(function() {
-    loading.style.display = "none";
-    fill.style.width = "0%";
-  }, 250);
-}
-
-
-function renderStatus(status) {
-  const dot = document.querySelector(".status-dot");
-
-  dot.style.animation = "pulse 2s infinite";
-
-  switch ((status || "").toLowerCase()) {
-    case "active":
-      dot.style.background = "#24C451";
-      break;
-
-    case "in repair":
-      dot.style.background = "#3B82F6";
-      break;
-
-    case "waiting parts":
-      dot.style.background = "#F59E0B";
-      break;
-
-    case "archived":
-    case "inactive":
-      dot.style.background = "#9CA3AF";
-      dot.style.animation = "none";
-      break;
-
-    default:
-      dot.style.background = "#9CA3AF";
-      dot.style.animation = "none";
-  }
-}
-
-
-  function setText(id, value) {
-    document.getElementById(id).textContent = value;
-  }
-
-
-  window.onload = function () {
-
-    loadVehicle();
-
-    setInterval(pollSelection, 3000);
-
+  // --- ESTADO GLOBAL ---
+  let lastKnownSignature = "";
+  let lastKnownTimestamp = 0;
+  let checkInterval = null;
+  
+  let isLoadingVehicle = false;
+  let activeImageRequestKey = "";
+  let progressTimer = null;
+  let progressValue = 0;
+  let lastVehicleSignature = "";
+
+  // --- INICIALIZACIÓN ---
+  window.onload = function() {
+    startSmartListener();
+    loadVehicle(); // Carga inicial inmediata
   };
 
+  // --- SISTEMA DE ESCUCHA INTELIGENTE ---
+  function startSmartListener() {
+    if (checkInterval) clearInterval(checkInterval);
 
-  function pollSelection() {
+    checkInterval = setInterval(function() {
+      google.script.run
+        .withSuccessHandler(function(response) {
+          // Manejo robusto: funciona si response es String O Objeto
+          let currentSig = "";
+          let currentTs = 0;
 
-    google.script.run.withSuccessHandler(function(signature) {
+          if (typeof response === 'object' && response !== null) {
+            currentSig = response.signature || "";
+            currentTs = response.timestamp || 0;
+          } else {
+            // Fallback si el servidor aún devuelve solo el string
+            currentSig = String(response || "");
+            currentTs = new Date().getTime(); 
+          }
 
-      if (!signature) return;
-
-      if (signature === lastPolledSignature) return;
-
-      lastPolledSignature = signature;
-
-      loadVehicle();
-
-    })
-    .getVehicleViewerSelectionSignature();
-
+          // Solo recargar si algo cambió
+          if (currentSig !== lastKnownSignature || currentTs !== lastKnownTimestamp) {
+            console.log("Cambio detectado:", { sig: currentSig, ts: currentTs });
+            
+            lastKnownSignature = currentSig;
+            lastKnownTimestamp = currentTs;
+            
+            loadVehicle(); 
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.error("Error al verificar firma:", err);
+        })
+        .getVehicleViewerSelectionSignature();
+    }, 1000); // Verifica cada 1 segundo
   }
 
+  // --- CARGA DE DATOS ---
+  function loadVehicle() {
+    if (isLoadingVehicle) return;
+    isLoadingVehicle = true;
 
-  function refreshVehicleViewer() {
+    google.script.run
+      .withSuccessHandler(function(vehicle) {
+        isLoadingVehicle = false;
+        renderVehicle(vehicle);
+      })
+      .withFailureHandler(function(error) {
+        console.error("Error cargando vehículo:", error);
+        isLoadingVehicle = false;
+        setText("vehicle-name", "Error loading data");
+      })
+      .getVehicleViewerDataFast();
+  }
 
-  console.log("Refresh solicitado.");
+  // --- RENDERIZADO PRINCIPAL ---
+  function renderVehicle(vehicle) {
+    stopProgress();
 
-  loadVehicle();
+    if (!vehicle || vehicle.error) {
+      setText("vehicle-name", vehicle ? vehicle.error : "No vehicle selected");
+      setText("vehicle-year", "");
+      setText("customer", "-");
+      setText("status", "Unknown");
+      // Limpiar imagen si hay error
+      const img = document.getElementById("vehicle-image");
+      img.style.display = "none";
+      img.removeAttribute("src");
+      return;
+    }
 
-}
+    // Generar firma única del vehículo para evitar re-renderizados innecesarios
+    const signature = [
+      vehicle.vehicleId,
+      vehicle.expectedImageName,
+      vehicle.imageFileId,
+      vehicle.workOrder ? vehicle.workOrder.workOrderId : ""
+    ].join("|");
 
+    if (signature === lastVehicleSignature) return; // Ya está renderizado
+    lastVehicleSignature = signature;
 
-  </script>
+    // Actualizar Textos
+    setText("vehicle-name", `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "Vehicle");
+    setText("vehicle-year", vehicle.year || "");
+    setText("customer", vehicle.customerName || "-");
+    setText("licensePlate", vehicle.licensePlate || "-");
+    setText("transmission", vehicle.transmission || "-");
+    setText("fuelType", vehicle.fuelType || "-");
+    setText("color", vehicle.color || "-");
+    setText("make", vehicle.make || "-");
+    setText("model", vehicle.model || "-");
+    setText("year", vehicle.year || "-");
+    
+    renderStatus(vehicle.status);
+    renderImage(vehicle);
+  }
+
+  // --- MANEJO DE IMÁGENES ---
+  function renderImage(vehicle) {
+    const image = document.getElementById("vehicle-image");
+
+    if (vehicle.imageFileId) {
+      stopProgress();
+      image.style.display = "block";
+      image.src = "https://drive.google.com/thumbnail?id=" + vehicle.imageFileId + "&sz=w1200";
+      document.getElementById("image-loading").style.display = "none";
+      return;
+    }
+
+    // No hay imagen, preparar para generar
+    image.removeAttribute("src");
+    image.style.display = "none";
+    showProgress();
+
+    if (vehicle.imageStatus === "needs-generation") {
+      startImageGeneration(vehicle);
+    }
+  }
+
+  function startImageGeneration(vehicle) {
+    const requestKey = vehicle.vehicleId + "|" + vehicle.expectedImageName;
+    if (activeImageRequestKey === requestKey) return; // Evitar duplicados
+    activeImageRequestKey = requestKey;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (activeImageRequestKey !== requestKey) return;
+
+        if (result && result.success && result.fileId) {
+          stopProgress();
+          loadVehicle(); // Recargar para mostrar la nueva imagen
+          return;
+        }
+        
+        // Si la generación falló o está obsoleta, recargar de todos modos
+        stopProgress();
+        loadVehicle();
+      })
+      .withFailureHandler(function(error) {
+        if (activeImageRequestKey !== requestKey) return;
+        console.error("Error generando imagen:", error);
+        stopProgress();
+      })
+      .generateSelectedVehicleImage(vehicle.vehicleId, vehicle.expectedImageName);
+  }
+
+  // --- UTILIDADES VISUALES ---
+  function showProgress() {
+    const loading = document.getElementById("image-loading");
+    const fill = document.getElementById("progress-fill");
+    loading.style.display = "block";
+    progressValue = 8;
+    fill.style.width = progressValue + "%";
+
+    if (progressTimer) clearInterval(progressTimer);
+    progressTimer = setInterval(function() {
+      if (progressValue < 92) {
+        progressValue += Math.max(1, Math.round((92 - progressValue) * 0.12));
+        fill.style.width = progressValue + "%";
+      }
+    }, 450);
+  }
+
+  function stopProgress() {
+    const loading = document.getElementById("image-loading");
+    const fill = document.getElementById("progress-fill");
+    if (progressTimer) {
+      clearInterval(progressTimer);
+      progressTimer = null;
+    }
+    fill.style.width = "100%";
+    setTimeout(function() {
+      loading.style.display = "none";
+      fill.style.width = "0%";
+    }, 250);
+  }
+
+  function renderStatus(status) {
+    const dot = document.querySelector(".status-dot");
+    dot.style.animation = "pulse 2s infinite";
+    const s = (status || "").toLowerCase();
+
+    if (s === "active") dot.style.background = "#24C451";
+    else if (s === "in repair") dot.style.background = "#3B82F6";
+    else if (s === "waiting parts") dot.style.background = "#F59E0B";
+    else {
+      dot.style.background = "#9CA3AF";
+      dot.style.animation = "none";
+    }
+    setText("status", status || "Unknown");
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+</script>
 
 </body>
 

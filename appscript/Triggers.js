@@ -1,42 +1,109 @@
 //Triggers.gs
 
-function onEdit(event) {
+function onEdit(e) {
+  if (!e || !e.range || !e.value) return;
 
-  restoreProtectedId(event);
+  const sheet = e.range.getSheet();
+  const sheetName = sheet.getName();
 
-  AutoRowEngine.processEdit(event);
+  if (sheetName !== SHEETS.VEHICLES && sheetName !== SHEETS.WORK_ORDERS) {
+    return;
+  }
 
+  if (e.range.getRow() < TABLE.FIRST_DATA_ROW) return;
+
+  let shouldUpdate = false;
+
+  if (sheetName === SHEETS.WORK_ORDERS) {
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const vehicleColIndex = headers.indexOf("Vehicle") + 1;
+    const customerColIndex = headers.indexOf("Customer") + 1;
+
+    if (e.range.getColumn() === vehicleColIndex || e.range.getColumn() === customerColIndex) {
+      shouldUpdate = true;
+    }
+  }
+  else if (sheetName === SHEETS.VEHICLES) {
+    shouldUpdate = true;
+  }
+
+  if (shouldUpdate) {
+    const range = e.range;
+    const signature = sheetName + "|" + range.getRow() + "|" + range.getColumn();
+
+    const cache = CacheService.getUserCache();
+    const now = new Date().getTime().toString();
+
+    cache.put('vehicleViewerSelection', signature, 60);
+    cache.put('vehicleViewerTimestamp', now, 60);
+
+    Logger.log("EDIT DETECTADO: Force update triggered for " + signature);
+  }
 }
 
 
 /**
- * Simple trigger: fires automatically whenever the user's selection
- * changes on any sheet. Writes a cheap signature (sheet name + row) to
- * the user's cache so the Vehicle Viewer sidebar can poll a near-free
- * function (getVehicleViewerSelectionSignature) instead of re-running
- * the full Drive/image lookup every 900ms regardless of clicks.
- *
- * IMPORTANT: simple triggers must never throw, or Sheets will silently
- * disable them. Everything here is wrapped defensively.
+ * Configura los triggers para el Vehicle Viewer.
+ * NOTA: Los triggers simples (onEdit, onSelectionChange) no necesitan instalación,
+ * se ejecutan automáticamente si están en el proyecto con ese nombre exacto.
+ * Esta función ahora solo sirve para limpiar triggers antiguos si los hubiera.
  */
-function onSelectionChange(event) {
+function setupVehicleViewerTrigger() {
+  // Limpiamos triggers instalables antiguos si existieran para evitar duplicados
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'forceVehicleViewerRefresh') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
 
-  try {
+  Logger.log("Triggers limpiados. Los eventos onEdit y onSelectionChange son nativos.");
+}
 
-    if (!event || !event.range) return;
 
-    const sheet = event.range.getSheet();
-    const row = event.range.getRow();
 
-    const signature = sheet.getName() + "|" + row;
+/**
+ * SE DISPARA AL MOVER EL CURSOR (Cambio de fila)
+ * Funciona para: Cambiar de Work Order o de Vehicle Row.
+ */
+function onSelectionChange(e) {
+  if (!e || !e.source) return;
 
-    CacheService.getUserCache().put("vehicleViewerSelection", signature, 120);
-
-  } catch (err) {
-    // Swallow. A broken cache write should never break normal editing.
+  const sheet = e.source.getActiveSheet();
+  const sheetName = sheet.getName();
+  
+  if (sheetName !== SHEETS.VEHICLES && sheetName !== SHEETS.WORK_ORDERS) {
+    return;
   }
 
+  const range = e.range;
+  if (range.getRow() < TABLE.FIRST_DATA_ROW) return;
+
+  const signature = sheetName + "|" + range.getRow() + "|" + range.getColumn();
+  
+  const cache = CacheService.getUserCache();
+  const now = new Date().getTime().toString();
+  
+  cache.put('vehicleViewerSelection', signature, 60);
+  cache.put('vehicleViewerTimestamp', now, 60);
+  
+  Logger.log("SELECCIÓN CAMBIADA: " + signature);
 }
+
+
+
+/**
+ * Helper opcional para obtener índices de columnas si no los tienes globales
+ * (Ajusta esto según tu ModuleConfig.gs real)
+ */
+function getWorkOrderColumnIndex_(headerName) {
+  // Implementación simplificada: busca el header en la fila 1
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEETS.WORK_ORDERS);
+  if (!sheet) return -1;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  return headers.indexOf(headerName) + 1;
+}
+
 
 
 /**

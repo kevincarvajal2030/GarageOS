@@ -108,24 +108,36 @@ function getVehicleViewerDataFast() {
 
 
 /**
- * Lightweight check used by the sidebar's polling loop.
- * Does NOT touch Sheets ranges, Drive, or the image API — just reads
- * a cache value written by onSelectionChange (Triggers.js). This is what
- * lets the client poll cheaply and only call getVehicleViewerDataFast()
- * when the selection has actually changed.
+ * Obtiene la firma de la selección actual y el timestamp actual.
+ * @param {Sheet} [sheet] - Hoja opcional. Si no se pasa, usa la activa.
+ * @returns {Object} { signature: string, timestamp: number }
  */
-function getVehicleViewerSelectionSignature() {
+function getVehicleViewerSelectionSignature(sheet) {
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  }
+  
+  const sheetName = sheet.getName();
+  const activeRange = sheet.getActiveRange();
+  
+  let signature = "NONE";
+  
+  if (activeRange) {
+    const row = activeRange.getRow();
+    const col = activeRange.getColumn();
+    signature = sheetName + "|" + row + "|" + col;
+  }
 
-  const cached = CacheService.getUserCache().get("vehicleViewerSelection");
+  // CORRECCIÓN: Obtener el servicio de caché correctamente
+  const cache = CacheService.getUserCache();
+  const cachedTimestamp = cache.get('vehicleViewerTimestamp');
+  
+  const timestamp = cachedTimestamp ? parseInt(cachedTimestamp, 10) : new Date().getTime();
 
-  if (cached) return cached;
-
-  // Fallback for the first load, before any onSelectionChange has fired yet.
-  const sheet = SpreadsheetApp.getActive().getActiveSheet();
-  const range = sheet.getActiveRange();
-
-  return sheet.getName() + "|" + (range ? range.getRow() : 0);
-
+  return {
+    signature: signature,
+    timestamp: timestamp
+  };
 }
 
 
