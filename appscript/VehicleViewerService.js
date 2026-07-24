@@ -222,122 +222,115 @@ function getSelectedVehicleFromVehicles_(sheet) {
 
 
 /**
- * Obtiene el contexto del vehículo seleccionado desde la hoja de Work Orders.
- * @param {Sheet} sheet - La hoja de Work Orders activa.
- * @returns {Object} El contexto del vehículo (vehicle, vehicleRow, workOrder).
+ * Obtiene el contexto del vehículo desde Work Orders.
+ * CORRECCIÓN: Usa una lógica estricta para evitar seleccionar el vehículo equivocado
+ * cuando hay múltiples vehículos con nombres similares para el mismo cliente.
  */
 function getSelectedVehicleFromWorkOrders_(sheet) {
   const activeRange = sheet.getActiveRange();
-
   if (!activeRange) return getDefaultVehicleContext_();
-
+  
   const rowNumber = activeRange.getRow();
-
-  // Validar que no sea la fila de encabezados
   if (rowNumber < TABLE.FIRST_DATA_ROW) return getDefaultVehicleContext_();
-
-  // IMPORTANTE: Usar getDisplayValues() para leer correctamente los Dropdowns
-  // getValues() a veces devuelve el ID interno o null en validaciones de datos
-  const rowValues = sheet
-    .getRange(rowNumber, 1, 1, sheet.getLastColumn())
-    .getDisplayValues()[0];
-
+  
+  // Usar getDisplayValues() para leer el texto visible del dropdown
+  const rowValues = sheet.getRange(rowNumber, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
   const workOrder = createWorkOrderObject(rowValues);
-
-  Logger.log("========== WORK ORDER DETECTADA ==========");
-  Logger.log("Fila: " + rowNumber);
-  Logger.log("Vehicle Name (Dropdown): '" + workOrder.vehicleName + "'");
-  Logger.log("Customer Name: '" + workOrder.customerName + "'");
-  Logger.log("Vehicle ID (Raw): '" + workOrder.vehicleId + "'");
-
-  // Intentar encontrar el vehículo en la hoja 02_Vehicles
-  let vehicleContext = findVehicleForWorkOrder_(workOrder);
-
-  // CASO DE ÉXITO: Se encontró el vehículo
+  
+  Logger.log("WO Detectada: Fila " + rowNumber + ", Vehículo: '" + workOrder.vehicleName + "'");
+  
+  // Intentar encontrar el vehículo con lógica estricta
+  const vehicleContext = findVehicleForWorkOrder_(workOrder, rowNumber);
+  
   if (vehicleContext && vehicleContext.vehicle) {
     vehicleContext.workOrder = workOrder;
-    Logger.log("Vehículo encontrado: " + vehicleContext.vehicle.displayName);
     return vehicleContext;
   }
-
-  // CASO DE FALLA: No se encontró el vehículo, pero construimos un fallback robusto
-  // Esto evita el "Loading..." infinito y muestra "No vehicle selected" o datos parciales
-  Logger.log("Vehículo NO encontrado en 02_Vehicles. Usando fallback.");
   
-  const fallbackVehicle = {
-    vehicleId: workOrder.vehicleId || "",
-    customerId: workOrder.customerId || "",
-    customerName: workOrder.customerName || "Unknown Customer",
-    licensePlate: "",
-    make: "",
-    model: "",
-    year: "",
-    transmission: "",
-    color: "",
-    fuelType: "",
-    status: workOrder.status || "",
-    notes: "",
-    // Usar el nombre del dropdown tal cual se lee
-    vehicleName: workOrder.vehicleName || "", 
-    displayName: workOrder.vehicleName ? workOrder.vehicleName : "No vehicle selected",
-    imageFileId: "",
-    imageStatus: "ready" // Importante para que el viewer no espere una imagen
-  };
-  
+  // FALLBACK: Si no se encuentra, crear objeto vacío pero válido
   return {
-    vehicle: fallbackVehicle,
-    vehicleRow: null, // Indica que no hay fila directa en Vehicles
+    vehicle: {
+      vehicleId: "",
+      displayName: workOrder.vehicleName ? workOrder.vehicleName : "No vehicle selected",
+      vehicleName: workOrder.vehicleName || "",
+      customerName: workOrder.customerName || "Unknown",
+      make: "", model: "", year: "", status: "",
+      imageFileId: "", imageStatus: "ready"
+    },
+    vehicleRow: null,
     workOrder: workOrder
   };
 }
 
 
-function findVehicleForWorkOrder_(workOrder) {
-
-  Logger.log("========== findVehicleForWorkOrder ==========");
-
-  Logger.log("VehicleID:");
-
-  Logger.log(workOrder.vehicleId);
-
-  Logger.log("VehicleName:");
-
-  Logger.log(workOrder.vehicleName);
-
-  Logger.log("CustomerID:");
-
-  Logger.log(workOrder.customerId);
-
-  Logger.log("CustomerName:");
-
-  Logger.log(workOrder.customerName);
-
-
-  if (workOrder.vehicleId) {
-    const byId = findVehicleById_(workOrder.vehicleId);
-    if (byId) return byId;
+/**
+ * Busca el vehículo asociado a una Work Order.
+ * @param {Object} workOrder - Objeto de la orden de trabajo.
+ * @param {Number} woRowNumber - Fila de la WO (para contexto adicional si fuera necesario).
+ * @returns {Object|null} Contexto del vehículo.
+ */
+function findVehicleForWorkOrder_(workOrder, woRowNumber) {
+  const vehSheet = SpreadsheetApp.getActive().getSheetByName(SHEETS.VEHICLES);
+  if (!vehSheet) return null;
+  
+  const config = ModuleConfig.get(SHEETS.VEHICLES);
+  if (!config) return null;
+  
+  // Índices de columnas clave
+  // Asumimos que vehicleName en WO coincide con vehicleName en Vehicles
+  const targetName = String(workOrder.vehicleName || "").trim();
+  const targetCustomer = String(workOrder.customerName || "").trim();
+  const targetCustomerId = String(workOrder.customerId || "").trim();
+  
+  if (!targetName && !targetCustomer) return null;
+  
+  const lastRow = vehSheet.getLastRow();
+  if (lastRow < TABLE.FIRST_DATA_ROW) return null;
+  
+  // Leer toda la tabla de vehículos
+  const maxCol = Math.max(
+    config.fields['vehicleName'], 
+    config.fields['customerName'], 
+    config.fields['customerId'],
+    config.fields['vehicleId'] || 1
+  );
+  
+  const values = vehSheet.getRange(TABLE.FIRST_DATA_ROW, 1, lastRow - TABLE.FIRST_DATA_ROW + 1, maxCol).getValues();
+  
+  let bestMatch = null;
+  let exactMatch = null;
+  
+  for (let i = 0; i < values.length; i++) {
+    const vRow = values[i];
+    const vName = String(vRow[config.fields['vehicleName'] - 1] || "").trim();
+    const vCustName = String(vRow[config.fields['customerName'] - 1] || "").trim();
+    const vCustId = String(vRow[config.fields['customerId'] - 1] || "").trim();
+    
+    // Criterios de coincidencia
+    const nameMatches = (targetName && vName === targetName);
+    const custMatches = (targetCustomerId && vCustId === targetCustomerId) || 
+                        (targetCustomer && vCustName === targetCustomer);
+    
+    if (nameMatches && custMatches) {
+      // COINCIDENCIA EXACTA: Nombre de vehículo Y Cliente coinciden
+      exactMatch = {
+        vehicle: createVehicleObject(vRow),
+        vehicleRow: TABLE.FIRST_DATA_ROW + i
+      };
+      break; // Salir inmediatamente, encontramos el exacto
+    }
+    
+    // Coincidencia parcial (solo por nombre, si el cliente falló pero el nombre es único)
+    if (nameMatches && !bestMatch) {
+      bestMatch = {
+        vehicle: createVehicleObject(vRow),
+        vehicleRow: TABLE.FIRST_DATA_ROW + i
+      };
+    }
   }
-
-  // Si hay vehicleName, buscar por nombre y cliente
-  if (workOrder.vehicleName) {
-    return findVehicleByNameAndCustomer_(
-      workOrder.vehicleName,
-      workOrder.customerId,
-      workOrder.customerName
-    );
-  }
-
-  // Si no hay vehicleId ni vehicleName, buscar solo por cliente
-  if (workOrder.customerId || workOrder.customerName) {
-    return findVehicleByNameAndCustomer_(
-      "",
-      workOrder.customerId,
-      workOrder.customerName
-    );
-  }
-
-  return null;
-
+  
+  // Priorizar coincidencia exacta. Si no, usar la mejor aproximación por nombre.
+  return exactMatch || bestMatch;
 }
 
 
