@@ -83,7 +83,7 @@ function getVehicleViewerDataFast() {
 
       Logger.log("NO CONTEXT");
 
-      return null;
+      return { error: "No vehicle context available" };
 
     }
 
@@ -234,7 +234,31 @@ function getSelectedVehicleFromWorkOrders_(sheet) {
 
   Logger.log(vehicleContext);
 
-  if (!vehicleContext) return null;
+  if (!vehicleContext) {
+    // Si no se encuentra el vehículo, crear un contexto vacío con los datos de la work order
+    return {
+      vehicle: {
+        vehicleId: workOrder.vehicleId || "",
+        customerId: workOrder.customerId || "",
+        customerName: workOrder.customerName || "",
+        licensePlate: "",
+        make: "",
+        model: "",
+        year: "",
+        transmission: "",
+        color: "",
+        fuelType: "",
+        status: "",
+        notes: "",
+        vehicleName: workOrder.vehicleName || "",
+        displayName: workOrder.vehicleName || "Vehicle not found",
+        imageFileId: "",
+        imageStatus: "ready"
+      },
+      vehicleRow: null,
+      workOrder: workOrder
+    };
+  }
 
   return {
     vehicle: vehicleContext.vehicle,
@@ -367,8 +391,8 @@ function findVehicleByNameAndCustomer_(vehicleName, customerId, customerName) {
     const vehicle = createVehicleObject(values[i]);
 
     const sameVehicle =
-      vehicle.displayName === vehicleName ||
-      vehicle.vehicleName === vehicleName;
+      vehicle.displayName.toLowerCase() === vehicleName.toLowerCase() ||
+      vehicle.vehicleName.toLowerCase() === vehicleName.toLowerCase();
 
     const sameCustomer =
       !customerId ||
@@ -411,6 +435,17 @@ function getDefaultVehicleContext_() {
 function prepareVehicleForViewer_(context) {
 
   const vehicle = context.vehicle;
+
+  // Si no hay vehicleRow (vehículo no encontrado en 02_Vehicles), retornar datos básicos sin intentar operaciones de imagen
+  if (!context.vehicleRow) {
+    return Object.assign({}, vehicle, {
+      workOrder: context.workOrder,
+      expectedImageName: "",
+      imageStatus: "ready"
+    });
+  }
+
+
   const expectedImageName = VehicleImageService.buildImageName(vehicle);
 
   Logger.log("expectedImageName:");

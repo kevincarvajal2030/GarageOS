@@ -423,7 +423,13 @@ function renderVehicle(vehicle) {
   console.log("RENDER");
   console.log(vehicle);
 
-  if (!vehicle) return;
+  if (!vehicle) {
+    setText("vehicle-name", "No vehicle selected");
+    setText("vehicle-year", "");
+    setText("customer", "-");
+    setText("status", "Unknown");
+    return;
+  }
 
   if (vehicle.error) {
     stopProgress();
