@@ -1,88 +1,71 @@
 /**
- * ============================================================
  * GARAGE OS
  * DriveService.gs
- *
  * Central service for Google Drive operations.
- * ============================================================
  */
-
 const DriveService = (() => {
 
-  /**
-   * Returns the Vehicle Images folder ID.
-   */
   function getVehicleImagesFolderId() {
-
-    return PropertiesService
+    const folderId = PropertiesService
       .getScriptProperties()
       .getProperty("VEHICLE_IMAGES_FOLDER_ID");
 
-  }
-
-  /**
-   * Returns the Vehicle Images folder.
-   */
-  function getVehicleImagesFolder() {
-
-    return DriveApp.getFolderById(
-      getVehicleImagesFolderId()
-    );
-
-  }
-
-  /**
-   * Finds an image by filename.
-   *
-   * Returns:
-   * Drive File
-   * or
-   * null
-   */
-  function findImage(imageName) {
-
-    const filename =
-      `${imageName}.${DRIVE.IMAGE_EXTENSION}`;
-
-    const files =
-      getVehicleImagesFolder()
-        .getFilesByName(filename);
-
-    if (!files.hasNext()) {
-
-      return null;
-
+    if (!folderId) {
+      throw new Error("Missing Script Property: VEHICLE_IMAGES_FOLDER_ID");
     }
 
-    return files.next();
+    return folderId;
+  }
 
+  function getVehicleImagesFolder() {
+    return DriveApp.getFolderById(getVehicleImagesFolderId());
+  }
+
+  function buildImageFilename(imageName) {
+    return `${imageName}.${DRIVE.IMAGE_EXTENSION}`;
+  }
+
+  function findImage(imageName) {
+    const filename = buildImageFilename(imageName);
+    const files = getVehicleImagesFolder().getFilesByName(filename);
+
+    if (!files.hasNext()) return null;
+
+    return files.next();
+  }
+
+  function saveImageBlob(imageName, blob) {
+    const existingFile = findImage(imageName);
+
+    if (existingFile) {
+      return existingFile;
+    }
+
+    const filename = buildImageFilename(imageName);
+    const folder = getVehicleImagesFolder();
+
+    blob.setName(filename);
+
+    const file = folder.createFile(blob);
+    file.setName(filename);
+
+    return file;
   }
 
   return Object.freeze({
-
     getVehicleImagesFolderId,
     getVehicleImagesFolder,
-    findImage
-
+    findImage,
+    saveImageBlob
   });
 
 })();
 
 
-function testFindImage() {
+function testVehicleImagesFolder() {
+  const folder = DriveService.getVehicleImagesFolder();
 
-  const file = DriveService.findImage(
-    "gmc-sierra-2020-black"
-  );
-
-  if (!file) {
-
-    Logger.log("Image not found");
-    return;
-
-  }
-
-  Logger.log(file.getName());
-  Logger.log(file.getId());
-
+  Logger.log(folder.getName());
+  Logger.log(folder.getId());
+  Logger.log(folder.getUrl());
 }

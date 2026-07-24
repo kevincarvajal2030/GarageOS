@@ -1,24 +1,10 @@
 /**
- * ============================================================
  * GARAGE OS
  * VehicleImageService.gs
- *
- * Handles vehicle image naming and lookup logic.
- * ============================================================
  */
-
 const VehicleImageService = (() => {
 
-  /**
-   * Normalizes text for filenames.
-   *
-   * Example:
-   * "Land Rover"
-   * ↓
-   * "land-rover"
-   */
   function normalize(text) {
-
     if (!text) return "";
 
     return String(text)
@@ -26,75 +12,69 @@ const VehicleImageService = (() => {
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .replace(/ /g, "-");
-
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
   }
 
-  /**
-   * Builds the image filename (without extension).
-   *
-   * Example:
-   * tesla-model-y-2022-red
-   */
   function buildImageName(vehicle) {
-
     return [
-
       normalize(vehicle.make),
       normalize(vehicle.model),
       normalize(vehicle.year),
       normalize(vehicle.color)
-
-    ].join("-");
-
+    ].filter(Boolean).join("-");
   }
 
-
-  /**
- * Returns the existing image file for a vehicle.
- * Returns null if no image exists.
- */
   function findExistingImage(vehicle) {
-
     const imageName = buildImageName(vehicle);
 
-    return DriveService.findImage(imageName);
+    if (!imageName) return null;
 
+    return DriveService.findImage(imageName);
+  }
+
+  function ensureVehicleImage(vehicle) {
+    const imageName = buildImageName(vehicle);
+
+    if (!imageName) {
+      return {
+        success: false,
+        error: "Vehicle image name could not be built."
+      };
+    }
+
+    const existingFile = DriveService.findImage(imageName);
+
+    if (existingFile) {
+      return {
+        success: true,
+        fileId: existingFile.getId(),
+        fileName: existingFile.getName(),
+        fileUrl: existingFile.getUrl(),
+        source: "drive-cache"
+      };
+    }
+
+    const prompt = PromptService.buildVehiclePrompt(vehicle);
+
+    return PollinationsService.generateImageToDrive(
+      prompt,
+      {
+        width: 1024,
+        height: 1024,
+        model: "flux",
+        nologo: true,
+        imageName: imageName
+      }
+    );
   }
 
   return Object.freeze({
-
+    normalize,
     buildImageName,
-    findExistingImage
-
+    findExistingImage,
+    ensureVehicleImage
   });
 
 })();
-
-
-function testFindExistingVehicleImage() {
-
-  const vehicle = {
-
-    make: "GMC",
-    model: "Sierra",
-    year: 2020,
-    color: "Black"
-
-  };
-
-  const file = VehicleImageService.findExistingImage(vehicle);
-
-  if (!file) {
-
-    Logger.log("Image not found.");
-    return;
-
-  }
-
-  Logger.log(file.getName());
-  Logger.log(file.getId());
-
-}
-

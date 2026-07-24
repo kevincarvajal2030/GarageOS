@@ -108,56 +108,59 @@ var PollinationsService = (function() {
    * @return {object} Resultado con información del archivo
    */
   function generateImageToDrive(prompt, options, folderId) {
-    try {
-      Logger.log('Generando imagen para guardar en Drive...');
+  try {
+    Logger.log("Generando imagen para guardar en Drive...");
 
-      var result = generateImage(prompt, options);
+    var result = generateImage(prompt, options);
 
-      if (!result.success) {
-        return result;
-      }
-
-      // Obtener carpeta
-      var folder;
-      if (folderId) {
-        folder = DriveApp.getFolderById(folderId);
-      } else {
-        folder = DriveApp.getRootFolder();
-      }
-
-      // Crear nombre de archivo
-      var timestamp = new Date().getTime();
-      var filename = 'pollinations_' + timestamp + '.png';
-
-      // Guardar blob en Drive
-      var file = folder.createFile(result.blob);
-      file.setName(filename);
-
-      Logger.log('Imagen guardada en Drive: ' + file.getName());
-      Logger.log('URL del archivo: ' + file.getUrl());
-
-      return {
-        success: true,
-        fileId: file.getId(),
-        fileName: filename,
-        fileUrl: file.getUrl(),
-        viewUrl: 'https://drive.google.com/file/d/' + file.getId() + '/view',
-        downloadUrl: 'https://drive.google.com/uc?id=' + file.getId() + '&export=download',
-        originalUrl: result.url,
-        prompt: prompt,
-        model: result.model,
-        dimensions: result.dimensions
-      };
-
-    } catch (e) {
-      Logger.log('Error guardando en Drive: ' + e.toString());
-      return {
-        success: false,
-        error: e.toString(),
-        message: 'Error guardando imagen en Drive'
-      };
+    if (!result.success) {s
+      return result;
     }
+
+    var imageName =
+      options && options.imageName
+        ? options.imageName
+        : "pollinations_" + new Date().getTime();
+
+    var file;
+
+    if (folderId) {
+      var folder = DriveApp.getFolderById(folderId);
+      var filename = imageName + "." + DRIVE.IMAGE_EXTENSION;
+
+      result.blob.setName(filename);
+      file = folder.createFile(result.blob);
+      file.setName(filename);
+    } else {
+      file = DriveService.saveImageBlob(imageName, result.blob);
+    }
+
+    Logger.log("Imagen guardada en Vehicle Images: " + file.getName());
+    Logger.log("Folder ID usado: " + file.getParents().next().getId());
+
+    return {
+      success: true,
+      fileId: file.getId(),
+      fileName: file.getName(),
+      fileUrl: file.getUrl(),
+      viewUrl: "https://drive.google.com/file/d/" + file.getId() + "/view",
+      thumbnailUrl: "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w1200",
+      originalUrl: result.url,
+      prompt: prompt,
+      model: result.model,
+      dimensions: result.dimensions
+    };
+
+  } catch (e) {
+    Logger.log("Error guardando en Drive: " + e.toString());
+
+    return {
+      success: false,
+      error: e.toString(),
+      message: "Error guardando imagen en Drive"
+    };
   }
+}
 
   /**
    * Prueba de conectividad con Pollinations.ai

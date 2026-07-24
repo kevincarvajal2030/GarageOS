@@ -1,5 +1,4 @@
 function openVehicleViewerSidebar() {
-
   const html = HtmlService
     .createHtmlOutputFromFile("VehicleViewer")
     .setTitle("Vehicle Viewer");
@@ -7,234 +6,298 @@ function openVehicleViewerSidebar() {
   SpreadsheetApp
     .getUi()
     .showSidebar(html);
-
 }
 
 
-/**
- * ============================================================
- * Creates a standardized Vehicle object from a sheet row.
- *
- * @param {Array} row Row values from 02_Vehicles.
- * @returns {Object} Immutable vehicle object.
- * ============================================================
- */
 function createVehicleObject(row) {
-
   const fields = ModuleConfig
     .get(SHEETS.VEHICLES)
     .fields;
 
   const get = (field) => {
-
     const value = row[fields[field] - 1];
 
     return typeof value === "string"
       ? value.trim()
       : value;
-
   };
 
-  // Read values only once
-  const vehicleId = get("VehicleID");
+  return Object.freeze({
+    vehicleId: get("VehicleID"),
+    customerId: get("CustomerID"),
+    customerName: get("CustomerName"),
+    licensePlate: get("LicensePlate"),
+    make: get("Make"),
+    model: get("Model"),
+    year: get("Year"),
+    transmission: get("Transmission"),
+    color: get("Color"),
+    fuelType: get("FuelType"),
+    status: get("Status"),
+    notes: get("Notes"),
+    vehicleName: get("VehicleName"),
+    displayName: `${get("Make")} ${get("Model")} ${get("Year")}`.trim(),
+    imageFileId: get("ImageFileID") || ""
+  });
+}
 
-  const customerId = get("CustomerID");
 
-  const customerName = get("CustomerName");
+function createWorkOrderObject(row) {
+  const fields = ModuleConfig
+    .get(SHEETS.WORK_ORDERS)
+    .fields;
 
-  const licensePlate = get("LicensePlate");
+  const get = (field) => {
+    const value = row[fields[field] - 1];
 
-  const make = get("Make");
-
-  const model = get("Model");
-
-  const year = get("Year");
-
-  const transmission = get("Transmission");
-
-  const color = get("Color");
-
-  const fuelType = get("FuelType");
-
-  const status = get("Status");
-
-  const vehicleName = get("VehicleName");
-  
-  const imageFileId = get("ImageFileID") || "";
-
-  debug("VehicleID", vehicleId);
-  debug("VehicleName", vehicleName);
-  debug("ImageFileID", imageFileId);
+    return typeof value === "string"
+      ? value.trim()
+      : value;
+  };
 
   return Object.freeze({
-
-    vehicleId,
-    customerId,
-    customerName,
-    licensePlate,
-    make,
-    model,
-    year,
-
-    transmission,
-    color,
-    fuelType,
-
-    status,
-
-    vehicleName,
-
-    displayName: `${make} ${model} ${year}`.trim(),
-
-    imageFileId
-
+    workOrderId: get("WorkOrderID"),
+    customerName: get("CustomerName"),
+    customerId: get("CustomerID"),
+    vehicleName: get("VehicleName"),
+    vehicleId: get("VehicleID"),
+    mechanicName: get("MechanicName"),
+    mechanicId: get("MechanicID"),
+    openDate: get("OpenDate"),
+    status: get("Status"),
+    priority: get("Priority"),
+    mileage: get("Mileage"),
+    complaint: get("Complaint"),
+    diagnosis: get("Diagnosis"),
+    laborCost: get("LaborCost"),
+    partCost: get("PartCost"),
+    totalCost: get("TotalCost"),
+    completionDate: get("CompletionDate")
   });
-
 }
 
 
-/**
- * ============================================================
- * Returns the currently selected vehicle.
- *
- * Selection priority:
- *
- * 1. Vehicles sheet
- * 2. Work Orders sheet
- * 3. First vehicle in database
- *
- * @returns {Object|null}
- * ============================================================
- */
-function getSelectedVehicle() {
+function getVehicleViewerData() {
+  const context = getSelectedVehicleContext_();
 
-  const ss = SpreadsheetApp.getActive();
-
-  const sheet = ss.getActiveSheet();
-
-  const sheetName = sheet.getName();
-
-  let vehicle = null;
-
-  switch (sheetName) {
-
-    case "02_Vehicles":
-      vehicle = getSelectedVehicleFromVehicles_(sheet);
-      break;
-
-    case "03_Work_Orders":
-      vehicle = getSelectedVehicleFromWorkOrders_(sheet);
-      break;
-
-    default:
-      vehicle = getDefaultVehicle();
-
-  }
-
-  return vehicle;
-
-}
-
-
-
-/**
- * ============================================================
- * Returns the selected vehicle from 02_Vehicles.
- *
- * @param {Sheet} sheet
- * @returns {Object|null}
- * ============================================================
- */
-function getSelectedVehicleFromVehicles_(sheet) {
-
-  const row = sheet.getActiveRange().getRow();
-
-  const FIRST_DATA_ROW = TABLE.FIRST_DATA_ROW;
-
-  if (row < FIRST_DATA_ROW) {
-    return getDefaultVehicle();
-  }
-
-  const lastColumn = sheet.getLastColumn();
-
-  const values = sheet
-    .getRange(row, 1, 1, lastColumn)
-    .getValues()[0];
-
-  return createVehicleObject(values);
-
-}
-
-
-/**
- * ============================================================
- * Returns the selected vehicle from 03_Work_Orders.
- *
- * @param {Sheet} sheet
- * @returns {Object|null}
- * ============================================================
- */
-function getSelectedVehicleFromWorkOrders_(sheet) {
-
-  return getDefaultVehicle();
-
-}
-
-
-/**
- * ============================================================
- * Returns the first available vehicle.
- *
- * @returns {Object|null}
- * ============================================================
- */
-function getDefaultVehicle() {
-
-  const sheet = SpreadsheetApp
-    .getActive()
-    .getSheetByName("02_Vehicles");
-
-  const FIRST_DATA_ROW = TABLE.FIRST_DATA_ROW;
-
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow < FIRST_DATA_ROW) {
+  if (!context || !context.vehicle) {
     return null;
   }
 
-  const lastColumn = sheet.getLastColumn();
+  const vehicle = ensureVehicleImageForViewer_(context);
+
+  return vehicle;
+}
+
+
+function getSelectedVehicleContext_() {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getActiveSheet();
+  const sheetName = sheet.getName();
+
+  switch (sheetName) {
+    case SHEETS.VEHICLES:
+      return getSelectedVehicleFromVehicles_(sheet);
+
+    case SHEETS.WORK_ORDERS:
+      return getSelectedVehicleFromWorkOrders_(sheet);
+
+    default:
+      return getDefaultVehicleContext_();
+  }
+}
+
+
+function getSelectedVehicleFromVehicles_(sheet) {
+  const activeRange = sheet.getActiveRange();
+
+  if (!activeRange) {
+    return getDefaultVehicleContext_();
+  }
+
+  const rowNumber = activeRange.getRow();
+
+  if (rowNumber < TABLE.FIRST_DATA_ROW) {
+    return getDefaultVehicleContext_();
+  }
 
   const row = sheet
-    .getRange(FIRST_DATA_ROW, 1, 1, lastColumn)
+    .getRange(rowNumber, 1, 1, sheet.getLastColumn())
     .getValues()[0];
 
-  return createVehicleObject(row);
-
+  return {
+    vehicle: createVehicleObject(row),
+    vehicleRow: rowNumber,
+    workOrder: null
+  };
 }
 
 
-/**
- * ============================================================
- * Returns the data required by Vehicle Viewer.
- *
- * This function acts as the bridge between Apps Script
- * and the HTML sidebar.
- *
- * @returns {Object|null}
- * ============================================================
- */
-function getVehicleViewerData() {
+function getSelectedVehicleFromWorkOrders_(sheet) {
+  const activeRange = sheet.getActiveRange();
 
-  return getSelectedVehicle();
+  if (!activeRange) {
+    return getDefaultVehicleContext_();
+  }
 
+  const rowNumber = activeRange.getRow();
+
+  if (rowNumber < TABLE.FIRST_DATA_ROW) {
+    return getDefaultVehicleContext_();
+  }
+
+  const workOrderRow = sheet
+    .getRange(rowNumber, 1, 1, sheet.getLastColumn())
+    .getValues()[0];
+
+  const workOrder = createWorkOrderObject(workOrderRow);
+
+  if (!workOrder.vehicleId) {
+    return null;
+  }
+
+  const vehicleContext = findVehicleById_(workOrder.vehicleId);
+
+  if (!vehicleContext) {
+    return null;
+  }
+
+  return {
+    vehicle: vehicleContext.vehicle,
+    vehicleRow: vehicleContext.vehicleRow,
+    workOrder: workOrder
+  };
 }
 
 
+function getDefaultVehicleContext_() {
+  const sheet = SpreadsheetApp
+    .getActive()
+    .getSheetByName(SHEETS.VEHICLES);
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < TABLE.FIRST_DATA_ROW) {
+    return null;
+  }
+
+  const row = sheet
+    .getRange(TABLE.FIRST_DATA_ROW, 1, 1, sheet.getLastColumn())
+    .getValues()[0];
+
+  return {
+    vehicle: createVehicleObject(row),
+    vehicleRow: TABLE.FIRST_DATA_ROW,
+    workOrder: null
+  };
+}
 
 
+function findVehicleById_(vehicleId) {
+  vehicleId = String(vehicleId || "").trim();
+
+  if (!vehicleId) {
+    return null;
+  }
+
+  const sheet = SpreadsheetApp
+    .getActive()
+    .getSheetByName(SHEETS.VEHICLES);
+
+  const config = ModuleConfig.get(SHEETS.VEHICLES);
+  const idColumn = config.fields.VehicleID;
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < TABLE.FIRST_DATA_ROW) {
+    return null;
+  }
+
+  const values = sheet
+    .getRange(
+      TABLE.FIRST_DATA_ROW,
+      1,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      sheet.getLastColumn()
+    )
+    .getValues();
+
+  for (let i = 0; i < values.length; i++) {
+    const rowVehicleId = String(values[i][idColumn - 1] || "").trim();
+
+    if (rowVehicleId === vehicleId) {
+      return {
+        vehicle: createVehicleObject(values[i]),
+        vehicleRow: TABLE.FIRST_DATA_ROW + i
+      };
+    }
+  }
+
+  return null;
+}
 
 
+function ensureVehicleImageForViewer_(context) {
+  const vehicle = context.vehicle;
+
+  if (vehicle.imageFileId) {
+    return Object.assign({}, vehicle, {
+      workOrder: context.workOrder,
+      imageStatus: "ready"
+    });
+  }
+
+  if (!hasEnoughVehicleImageData_(vehicle)) {
+    return Object.assign({}, vehicle, {
+      workOrder: context.workOrder,
+      imageStatus: "missing-data"
+    });
+  }
+
+  const result = VehicleImageService.ensureVehicleImage(vehicle);
+
+  if (!result.success || !result.fileId) {
+    return Object.assign({}, vehicle, {
+      workOrder: context.workOrder,
+      imageStatus: "error",
+      imageError: result.error || result.message || "Image generation failed."
+    });
+  }
+
+  saveVehicleImageFileId_(context.vehicleRow, result.fileId);
+
+  return Object.assign({}, vehicle, {
+    imageFileId: result.fileId,
+    workOrder: context.workOrder,
+    imageStatus: result.source || "generated"
+  });
+}
 
 
+function saveVehicleImageFileId_(vehicleRow, fileId) {
+  if (!vehicleRow || !fileId) {
+    return;
+  }
+
+  const sheet = SpreadsheetApp
+    .getActive()
+    .getSheetByName(SHEETS.VEHICLES);
+
+  const config = ModuleConfig.get(SHEETS.VEHICLES);
+  const imageColumn = config.fields.ImageFileID;
+
+  sheet
+    .getRange(vehicleRow, imageColumn)
+    .setValue(fileId);
+}
 
 
+function hasEnoughVehicleImageData_(vehicle) {
+  return !!(
+    vehicle &&
+    vehicle.make &&
+    vehicle.model &&
+    vehicle.year &&
+    vehicle.color
+  );
+}

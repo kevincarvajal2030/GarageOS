@@ -385,153 +385,120 @@
   </div>
 
   <script>
-    /**
- * ============================================================
- * Loads the selected vehicle from Apps Script.
- * ============================================================
- */
-function loadVehicle(){
+    let lastVehicleSignature = "";
+let isLoadingVehicle = false;
 
-    google.script.run
-        .withSuccessHandler(renderVehicle)
-        .getVehicleViewerData();
+function loadVehicle() {
+  if (isLoadingVehicle) return;
 
+  isLoadingVehicle = true;
+
+  google.script.run
+    .withSuccessHandler(function(vehicle) {
+      isLoadingVehicle = false;
+      renderVehicle(vehicle);
+    })
+    .withFailureHandler(function(error) {
+      isLoadingVehicle = false;
+      console.error(error);
+    })
+    .getVehicleViewerData();
 }
 
 
-/**
- * ============================================================
- * Renders the selected vehicle.
- * ============================================================
- */
-function renderVehicle(vehicle){
+function renderVehicle(vehicle) {
+  if (!vehicle) return;
 
-    if(!vehicle){
+  const signature = [
+    vehicle.vehicleId,
+    vehicle.imageFileId,
+    vehicle.workOrder ? vehicle.workOrder.workOrderId : ""
+  ].join("|");
 
-        return;
+  if (signature === lastVehicleSignature) return;
 
-    }
+  lastVehicleSignature = signature;
 
-    document.getElementById("vehicle-name").textContent =
-        `${vehicle.make} ${vehicle.model}`;
+  document.getElementById("vehicle-name").textContent =
+    `${vehicle.make} ${vehicle.model}`;
 
-    document.getElementById("vehicle-year").textContent =
-        vehicle.year;
+  document.getElementById("vehicle-year").textContent =
+    vehicle.year;
 
-    document.getElementById("customer").textContent =
-        vehicle.customerName;
+  document.getElementById("customer").textContent =
+    vehicle.customerName || "-";
 
-    document.getElementById("licensePlate").textContent =
-        vehicle.licensePlate || "-";
+  document.getElementById("licensePlate").textContent =
+    vehicle.licensePlate || "-";
 
-    document.getElementById("transmission").textContent =
-        vehicle.transmission;
+  document.getElementById("transmission").textContent =
+    vehicle.transmission || "-";
 
-    document.getElementById("fuelType").textContent =
-        vehicle.fuelType;
+  document.getElementById("fuelType").textContent =
+    vehicle.fuelType || "-";
 
-    document.getElementById("color").textContent =
-        vehicle.color;
+  document.getElementById("color").textContent =
+    vehicle.color || "-";
 
-    document.getElementById("make").textContent =
-        vehicle.make;
+  document.getElementById("make").textContent =
+    vehicle.make || "-";
 
-    document.getElementById("model").textContent =
-        vehicle.model;
+  document.getElementById("model").textContent =
+    vehicle.model || "-";
 
-    document.getElementById("year").textContent =
-        vehicle.year;
+  document.getElementById("year").textContent =
+    vehicle.year || "-";
 
-    document.getElementById("status").textContent =
-        vehicle.status;
+  document.getElementById("status").textContent =
+    vehicle.status || "Unknown";
 
+  const image = document.getElementById("vehicle-image");
 
-       /*
-     * ------------------------------------------------------------
-     * Vehicle Image
-     * ------------------------------------------------------------
-     */
+  if (vehicle.imageFileId) {
+    image.src =
+      "https://drive.google.com/thumbnail?id=" +
+      vehicle.imageFileId +
+      "&sz=w1200";
+  } else {
+    image.src =
+      "https://placehold.co/1200x700/e8e8e8/8c8c8c?text=Generating+Image";
+  }
 
-    const image = document.getElementById("vehicle-image");
+  const dot = document.querySelector(".status-dot");
 
-    if (vehicle.imageFileId) {
+  dot.style.animation = "pulse 2s infinite";
 
-        image.src =
-            "https://drive.google.com/thumbnail?id=" +
-            vehicle.imageFileId +
-            "&sz=w1200";
+  switch ((vehicle.status || "").toLowerCase()) {
+    case "active":
+      dot.style.background = "#24C451";
+      break;
 
-    } else {
+    case "in repair":
+      dot.style.background = "#3B82F6";
+      break;
 
-        image.src =
-            "https://placehold.co/1200x700/e8e8e8/8c8c8c?text=No+Image";
+    case "waiting parts":
+      dot.style.background = "#F59E0B";
+      break;
 
-    }
+    case "archived":
+    case "inactive":
+      dot.style.background = "#9CA3AF";
+      dot.style.animation = "none";
+      break;
 
-    /*
-     * ------------------------------------------------------------
-     * Status Color
-     * ------------------------------------------------------------
-     */
-
-    const dot = document.querySelector(".status-dot");
-
-    dot.style.animation = "pulse 2s infinite";
-
-    switch ((vehicle.status || "").toLowerCase()) {
-
-        case "active":
-
-            dot.style.background = "#24C451";
-
-            break;
-
-        case "in repair":
-
-            dot.style.background = "#3B82F6";
-
-            break;
-
-        case "waiting parts":
-
-            dot.style.background = "#F59E0B";
-
-            break;
-
-        case "archived":
-
-            dot.style.background = "#6B7280";
-
-            dot.style.animation = "none";
-
-            break;
-
-        case "inactive":
-
-            dot.style.background = "#9CA3AF";
-
-            dot.style.animation = "none";
-
-            break;
-
-        default:
-
-            dot.style.background = "#9CA3AF";
-
-            dot.style.animation = "none";
-
-    }
-
+    default:
+      dot.style.background = "#9CA3AF";
+      dot.style.animation = "none";
+  }
 }
 
-/*
- * ============================================================
- * Initialize
- * ============================================================
- */
 
-window.onload = loadVehicle;
+window.onload = function() {
+  loadVehicle();
 
+  setInterval(loadVehicle, 2500);
+};
   </script>
 
 </body>

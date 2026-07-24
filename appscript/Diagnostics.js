@@ -153,3 +153,22 @@ function testVehicleImageWithPollinations() {
     Logger.log("Excepción: " + e.toString());
   }
 }
+
+
+
+function testGenerateVehicleImageToCorrectFolder() {
+  const vehicle = {
+    make: "GMC",
+    model: "Sierra",
+    year: 2020,
+    color: "White"
+  };
+
+  const result = VehicleImageService.ensureVehicleImage(vehicle);
+
+  Logger.log(JSON.stringify(result, null, 2));
+}
+
+
+
+
