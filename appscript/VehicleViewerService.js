@@ -263,74 +263,104 @@ function getSelectedVehicleFromWorkOrders_(sheet) {
 }
 
 
-/**
- * Busca el vehículo asociado a una Work Order.
- * @param {Object} workOrder - Objeto de la orden de trabajo.
- * @param {Number} woRowNumber - Fila de la WO (para contexto adicional si fuera necesario).
- * @returns {Object|null} Contexto del vehículo.
- */
-function findVehicleForWorkOrder_(workOrder, woRowNumber) {
-  const vehSheet = SpreadsheetApp.getActive().getSheetByName(SHEETS.VEHICLES);
-  if (!vehSheet) return null;
-  
-  const config = ModuleConfig.get(SHEETS.VEHICLES);
-  if (!config) return null;
-  
-  // Índices de columnas clave
-  // Asumimos que vehicleName en WO coincide con vehicleName en Vehicles
-  const targetName = String(workOrder.vehicleName || "").trim();
-  const targetCustomer = String(workOrder.customerName || "").trim();
-  const targetCustomerId = String(workOrder.customerId || "").trim();
-  
-  if (!targetName && !targetCustomer) return null;
-  
-  const lastRow = vehSheet.getLastRow();
+
+
+function findVehicleForWorkOrder_(workOrder) {
+
+  const vehicleSheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName(SHEETS.VEHICLES);
+
+  if (!vehicleSheet) return null;
+
+  const lastRow = vehicleSheet.getLastRow();
+
   if (lastRow < TABLE.FIRST_DATA_ROW) return null;
-  
-  // Leer toda la tabla de vehículos
-  const maxCol = Math.max(
-    config.fields['vehicleName'], 
-    config.fields['customerName'], 
-    config.fields['customerId'],
-    config.fields['vehicleId'] || 1
-  );
-  
-  const values = vehSheet.getRange(TABLE.FIRST_DATA_ROW, 1, lastRow - TABLE.FIRST_DATA_ROW + 1, maxCol).getValues();
-  
-  let bestMatch = null;
-  let exactMatch = null;
-  
+
+  const values = vehicleSheet.getRange(
+    TABLE.FIRST_DATA_ROW,
+    1,
+    lastRow - TABLE.FIRST_DATA_ROW + 1,
+    vehicleSheet.getLastColumn()
+  ).getValues();
+
+  const targetVehicleID = String(workOrder.vehicleID || "").trim();
+  const targetCustomerID = String(workOrder.customerID || "").trim();
+  const targetVehicleName = String(workOrder.vehicleName || "").trim();
+  const targetCustomerName = String(workOrder.customerName || "").trim();
+
   for (let i = 0; i < values.length; i++) {
-    const vRow = values[i];
-    const vName = String(vRow[config.fields['vehicleName'] - 1] || "").trim();
-    const vCustName = String(vRow[config.fields['customerName'] - 1] || "").trim();
-    const vCustId = String(vRow[config.fields['customerId'] - 1] || "").trim();
-    
-    // Criterios de coincidencia
-    const nameMatches = (targetName && vName === targetName);
-    const custMatches = (targetCustomerId && vCustId === targetCustomerId) || 
-                        (targetCustomer && vCustName === targetCustomer);
-    
-    if (nameMatches && custMatches) {
-      // COINCIDENCIA EXACTA: Nombre de vehículo Y Cliente coinciden
-      exactMatch = {
-        vehicle: createVehicleObject(vRow),
+
+    const vehicle = createVehicleObject(values[i]);
+
+    //=====================================================
+    // 1. Exact match using Vehicle ID (highest priority)
+    //=====================================================
+
+    if (
+      targetVehicleID &&
+      vehicle.vehicleID === targetVehicleID
+    ) {
+
+      return {
+        vehicle: vehicle,
         vehicleRow: TABLE.FIRST_DATA_ROW + i
       };
-      break; // Salir inmediatamente, encontramos el exacto
+
     }
-    
-    // Coincidencia parcial (solo por nombre, si el cliente falló pero el nombre es único)
-    if (nameMatches && !bestMatch) {
-      bestMatch = {
-        vehicle: createVehicleObject(vRow),
-        vehicleRow: TABLE.FIRST_DATA_ROW + i
-      };
-    }
+
   }
-  
-  // Priorizar coincidencia exacta. Si no, usar la mejor aproximación por nombre.
-  return exactMatch || bestMatch;
+
+  for (let i = 0; i < values.length; i++) {
+
+    const vehicle = createVehicleObject(values[i]);
+
+    //=====================================================
+    // 2. Vehicle Name + Customer ID
+    //=====================================================
+
+    if (
+      targetVehicleName &&
+      targetCustomerID &&
+      vehicle.vehicleName === targetVehicleName &&
+      vehicle.customerID === targetCustomerID
+    ) {
+
+      return {
+        vehicle: vehicle,
+        vehicleRow: TABLE.FIRST_DATA_ROW + i
+      };
+
+    }
+
+  }
+
+  for (let i = 0; i < values.length; i++) {
+
+    const vehicle = createVehicleObject(values[i]);
+
+    //=====================================================
+    // 3. Vehicle Name + Customer Name
+    //=====================================================
+
+    if (
+      targetVehicleName &&
+      targetCustomerName &&
+      vehicle.vehicleName === targetVehicleName &&
+      vehicle.customerName === targetCustomerName
+    ) {
+
+      return {
+        vehicle: vehicle,
+        vehicleRow: TABLE.FIRST_DATA_ROW + i
+      };
+
+    }
+
+  }
+
+  return null;
+
 }
 
 
