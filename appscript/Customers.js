@@ -200,102 +200,116 @@ function validateCustomerStatusChange(sheet, row, config, event) {
 
 }
 
+/*
+==============================================================================
+LEGACY CODE
 
-/**
- * Returns every ACTIVE customer full name.
- *
- * Used by:
- * - Vehicles
- * - Work Orders
- * - Payments
- *
- * @returns {string[]}
- */
-function getCustomerNames() {
+Customer dropdowns no longer use 10_Reference_Data!Q.
 
-  const sheet = SpreadsheetApp
-    .getActive()
-    .getSheetByName(SHEETS.CUSTOMERS);
+Current source:
+01_Customers!M:M
 
-  const lastRow = sheet.getLastRow();
+This code is kept temporarily for rollback purposes.
+Do not re-enable unless the dropdown architecture changes.
 
-  if (lastRow < TABLE.FIRST_DATA_ROW) {
-    return [];
-  }
-
-  const values = sheet.getRange(
-    TABLE.FIRST_DATA_ROW,
-    1,
-    lastRow - TABLE.FIRST_DATA_ROW + 1,
-    sheet.getLastColumn()
-  ).getDisplayValues();
-
-  const customers = [];
-
-  for (const row of values) {
-
-    const firstName = String(row[1]).trim();
-    const lastName  = String(row[2]).trim();
-    const status    = String(row[10]).trim();
-
-    if (
-      !firstName ||
-      !lastName ||
-      status !== "Active"
-    ) {
-      continue;
-    }
-
-    customers.push(
-      `${firstName} ${lastName}`
-    );
-
-  }
-
-  return customers;
-
-}
-
-
-/**
-* Updates the CustomerReference list.
+Deprecated: 2026-07
+==============================================================================
 */
-function updateCustomerReferenceList() {
+// /**
+//  * Returns every ACTIVE customer full name.
+//  *
+//  * Used by:
+//  * - Vehicles
+//  * - Work Orders
+//  * - Payments
+//  *
+//  * @returns {string[]}
+//  */
+// function getCustomerNames() {
 
-  const ss = SpreadsheetApp.getActive();
+//   const sheet = SpreadsheetApp
+//     .getActive()
+//     .getSheetByName(SHEETS.CUSTOMERS);
 
-  const sheet = ss.getSheetByName(
-    SHEETS.REFERENCEDATA
-  );
+//   const lastRow = sheet.getLastRow();
 
-  const customers = getCustomerNames();
+//   if (lastRow < TABLE.FIRST_DATA_ROW) {
+//     return [];
+//   }
 
-  const START_ROW = 2;
-  const COLUMN = 17; // Q
+//   const values = sheet.getRange(
+//     TABLE.FIRST_DATA_ROW,
+//     1,
+//     lastRow - TABLE.FIRST_DATA_ROW + 1,
+//     sheet.getLastColumn()
+//   ).getDisplayValues();
 
-  sheet
-    .getRange(
-      START_ROW,
-      COLUMN,
-      sheet.getMaxRows(),
-      1
-    )
-    .clearContent();
+//   const customers = [];
 
-  if (customers.length === 0) return;
+//   for (const row of values) {
 
-  sheet
-    .getRange(
-      START_ROW,
-      COLUMN,
-      customers.length,
-      1
-    )
-    .setValues(
-      customers.map(name => [name])
-    );
+//     const firstName = String(row[1]).trim();
+//     const lastName  = String(row[2]).trim();
+//     const status    = String(row[10]).trim();
 
-}
+//     if (
+//       !firstName ||
+//       !lastName ||
+//       status !== "Active"
+//     ) {
+//       continue;
+//     }
+
+//     customers.push(
+//       `${firstName} ${lastName}`
+//     );
+
+//   }
+
+//   return customers;
+
+// }
+
+
+// /**
+// * Updates the CustomerReference list.
+// */
+// function updateCustomerReferenceList() {
+
+//   const ss = SpreadsheetApp.getActive();
+
+//   const sheet = ss.getSheetByName(
+//     SHEETS.REFERENCEDATA
+//   );
+
+//   const customers = getCustomerNames();
+
+//   const START_ROW = 2;
+//   const COLUMN = 17; // Q
+
+//   sheet
+//     .getRange(
+//       START_ROW,
+//       COLUMN,
+//       sheet.getMaxRows(),
+//       1
+//     )
+//     .clearContent();
+
+//   if (customers.length === 0) return;
+
+//   sheet
+//     .getRange(
+//       START_ROW,
+//       COLUMN,
+//       customers.length,
+//       1
+//     )
+//     .setValues(
+//       customers.map(name => [name])
+//     );
+
+// }
 
 
 /**

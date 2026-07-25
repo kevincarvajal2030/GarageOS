@@ -193,19 +193,19 @@ const AutoRowEngine = (() => {
 
     switch (sheet.getName()) {
 
-      case SHEETS.CUSTOMERS:
+      // case SHEETS.CUSTOMERS:
 
-        if (
-          column === config.fields.FirstName ||
-          column === config.fields.LastName ||
-          column === config.fields.Status
-        ) {
+      //   if (
+      //     column === config.fields.FirstName ||
+      //     column === config.fields.LastName ||
+      //     column === config.fields.Status
+      //   ) {
 
-          updateCustomerReferenceList();
+      //     updateCustomerReferenceList();
 
-        }
+      //   }
 
-        break;
+      //   break;
 
       case SHEETS.VEHICLES:
 
