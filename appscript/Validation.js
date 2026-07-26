@@ -16,6 +16,10 @@ function runBusinessValidations(sheet, row, config, event) {
       runWorkOrderBusinessValidations(sheet, row, config, event);
       break;
 
+    case SHEETS.MECHANICS:
+      runMechanicBusinessValidations(sheet, row, config, event);
+      break;
+
   }
 
 }
