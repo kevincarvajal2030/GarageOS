@@ -4,7 +4,7 @@
  */
 
 // Constantes de debounce para evitar ejecuciones masivas
-const DEBOUNCE_MS = 800; 
+const DEBOUNCE_MS = 800;
 
 /**
  * ON EDIT: Restaura funcionalidad de AutoRowEngine y maneja actualizaciones del Viewer
@@ -34,7 +34,7 @@ function onEdit(e) {
 
   // Solo nos interesa si es Vehicles o Work Orders
   if (sheetName !== SHEETS.VEHICLES && sheetName !== SHEETS.WORK_ORDERS) {
-    
+
     return;
   }
 
@@ -48,17 +48,17 @@ function onEdit(e) {
   const lastEdit = cache.get(cacheKey);
 
   if (lastEdit && (now - parseInt(lastEdit)) < DEBOUNCE_MS) {
-    return; 
+    return;
   }
   cache.put(cacheKey, now.toString(), 10);
 
   // Forzar actualización del Viewer
   const col = e.range.getColumn();
   const signature = sheetName + "|" + row + "|" + col;
-  
+
   cache.put('vehicleViewerSelection', signature, 60);
   cache.put('vehicleViewerTimestamp', now.toString(), 60);
-  
+
   Logger.log("EDIT TRIGGER (Viewer): " + signature);
 }
 
@@ -181,6 +181,37 @@ function restoreProtectedId(event) {
 
   }
 
+
+  // Module-specific protected fields (only protect after ID exists)
+  if (config.protectedFields && config.protectedFields.length > 0) {
+
+    // Check if record already has an ID (for modules with auto-generated IDs)
+    const idFieldName = getIdFieldName(config);
+    let hasId = false;
+
+    if (idFieldName) {
+      const idColumn = config.fields[idFieldName];
+      const idValue = sheet.getRange(event.range.getRow(), idColumn).getDisplayValue().trim();
+      hasId = isValidRecordId(idValue, config);
+    }
+
+    // Only enforce protected fields if the record already has an ID
+    if (hasId || !config.autoGenerateId) {
+      config.protectedFields.forEach(field => {
+
+        protectedFields.push({
+
+          name: field,
+
+          column: config.fields[field]
+
+        });
+
+      });
+    }
+
+  }
+
   const edited = protectedFields.find(
     field => field.column === event.range.getColumn()
   );
@@ -196,6 +227,26 @@ function restoreProtectedId(event) {
     APP.NAME,
     3
   );
+
+}
+
+
+/**
+ * Helper to get the ID field name from config.
+ */
+function getIdFieldName(config) {
+
+  return Object.keys(config.fields).find(name => name.endsWith("ID")) || null;
+
+}
+
+
+/**
+ * Helper to validate if an ID is valid (has the correct prefix format).
+ */
+function isValidRecordId(id, config) {
+
+  return !!id && id.startsWith(config.idPrefix + "-");
 
 }
 

@@ -202,7 +202,9 @@ const ModuleConfig = (() => {
         "VehicleID"
       ],
 
-      protectedFields: [],
+      protectedFields: [
+        "PaymentStatus"
+      ],
 
       requiredFields: [
 
@@ -446,8 +448,7 @@ const ModuleConfig = (() => {
         PaymentMethod: 5,
         TotalCost: 6,
         PaymentStatus: 7,
-        PaymentDate: 8,
-        Notes: 9
+        PaymentDate: 8
 
       },
 

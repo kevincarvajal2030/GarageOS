@@ -315,52 +315,6 @@ function validateMechanicSelection(sheet, row, config, event) {
 }
 
 
-
-/**
- * Automatically sets the Completion Date when Status changes to Completed.
- * Clears the Completion Date when Status changes from Completed to any other status.
- *
- * Work Orders:
- * Status = Completed -> Completion Date = Current Date
- * Status != Completed (was Completed) -> Completion Date = empty
- *
- * @param {Sheet} sheet - The sheet being edited.
- * @param {number} row - The row being edited.
- * @param {Object} config - The module configuration.
- * @param {Object} event - The edit event object.
- */
-function syncWorkOrderCompletionDate(sheet, row, config, event) {
-
-  const statusColumn = config.fields.Status;
-  const completionDateColumn = config.fields.CompletionDate;
-
-  // Only act if the Status column was edited
-  if (event.range.getColumn() !== statusColumn) {
-    return;
-  }
-
-  const newStatus = String(event.value || "").trim();
-  const oldStatus = String(event.oldValue || "").trim();
-  const completionDateCell = sheet.getRange(row, completionDateColumn);
-
-  // If status changed to Completed, set completion date to today
-  if (newStatus === "Completed") {
-    completionDateCell.setValue(
-      Utilities.formatDate(
-        new Date(),
-        Session.getScriptTimeZone(),
-        "MM/dd/yyyy"
-      )
-    );
-  }
-  // If status changed FROM Completed to something else, clear completion date
-  else if (oldStatus === "Completed" && newStatus !== "Completed") {
-    completionDateCell.clearContent();
-  }
-
-}
-
-
 /**
  * Synchronizes mechanic status when a Work Order is assigned, changed, or completed.
  * IMPORTANT: This should only be called AFTER validation has succeeded.

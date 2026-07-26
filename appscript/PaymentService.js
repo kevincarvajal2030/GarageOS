@@ -4,17 +4,7 @@
  * GarageOS
  * PaymentService.gs
  * ----------------------------------------------------------------------------
- * Central service for managing Payment records.
- *
- * This service handles:
- * - Automatic Payment creation from completed Work Orders
- * - Payment synchronization with Work Orders
- * - Payment date management
- *
- * Payments are automatically created when a Work Order status changes to "Completed".
- * Payments become the source of truth for financial status after creation.
- * ============================================================================
- */
+**/
 
 const PaymentService = (() => {
 
@@ -189,7 +179,13 @@ const PaymentService = (() => {
     for (let i = 0; i < values.length; i++) {
       if (String(values[i][0]).trim() === workOrderId) {
         const targetRow = TABLE.FIRST_DATA_ROW + i;
-        workOrdersSheet.getRange(targetRow, paymentStatusColumn).setValue(paymentStatus);
+        const targetCell = workOrdersSheet.getRange(targetRow, paymentStatusColumn);
+
+        // Update the value
+        targetCell.setValue(paymentStatus);
+
+        // Apply formatting to match the Payment module appearance
+        applyPaymentStatusFormatting(targetCell, paymentStatus);
         break;
       }
     }
@@ -291,7 +287,10 @@ const PaymentService = (() => {
       // Business Rule 3: Synchronize Payment Status
       // Update Work Order Payment Status to Pending
       const paymentStatusColumn = woConfig.fields.PaymentStatus;
-      workOrdersSheet.getRange(workOrderRow, paymentStatusColumn).setValue("Pending");
+      const paymentStatusCell = workOrdersSheet.getRange(workOrderRow, paymentStatusColumn);
+      paymentStatusCell.setValue("Pending");
+      // Apply formatting to match the Payment module appearance
+      applyPaymentStatusFormatting(paymentStatusCell, "Pending");
     }
 
     return paymentId;
