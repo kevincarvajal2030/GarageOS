@@ -331,7 +331,7 @@ const MechanicAssignmentService = (() => {
    * @param {string} mechanicId - The mechanic ID to check.
    * @returns {{available: boolean, reason: string|null}} Availability status and reason if unavailable.
    */
-  function isMechanicAvailable(mechanicId) {
+  function isMechanicAvailable(mechanicId, workOrderRow) {
 
     mechanicId = String(mechanicId || "").trim();
 
@@ -339,8 +339,6 @@ const MechanicAssignmentService = (() => {
       return { available: false, reason: "No mechanic selected" };
     }
 
-    // First, self-heal: sync the status based on actual WO data
-    syncMechanicStatus(mechanicId);
 
     const ss = SpreadsheetApp.getActive();
     const mechanicsSheet = ss.getSheetByName(SHEETS.MECHANICS);
@@ -375,6 +373,11 @@ const MechanicAssignmentService = (() => {
           return { available: false, reason: "Mechanic is " + status };
         }
 
+        // Check for active WOs, excluding the current one if provided (for reassignment validation)
+        if (hasActiveWorkOrdersExcluding(mechanicId, workOrderRow)) {
+          return { available: false, reason: "Mechanic is Busy" };
+        }
+
         return { available: true, reason: null };
 
       }
@@ -385,21 +388,89 @@ const MechanicAssignmentService = (() => {
 
   }
 
+
+
+  /**
+  * Checks if a mechanic has any active Work Orders, optionally excluding a specific row.
+  *
+  * @param {string} mechanicId - The mechanic ID to check.
+  * @param {number|null} excludeRow - Optional: A row to exclude from the count (for reassignment validation).
+  * @returns {boolean} True if the mechanic has at least one active Work Order (excluding the specified row).
+  */
+  function hasActiveWorkOrdersExcluding(mechanicId, excludeRow) {
+
+    mechanicId = String(mechanicId || "").trim();
+
+    if (!mechanicId) {
+      return false;
+    }
+
+    const ss = SpreadsheetApp.getActive();
+    const workOrdersSheet = ss.getSheetByName(SHEETS.WORK_ORDERS);
+
+    if (!workOrdersSheet) {
+      return false;
+    }
+
+    const lastRow = workOrdersSheet.getLastRow();
+
+    if (lastRow < TABLE.FIRST_DATA_ROW) {
+      return false;
+    }
+
+    const config = ModuleConfig.get(SHEETS.WORK_ORDERS);
+
+    const values = workOrdersSheet.getRange(
+      TABLE.FIRST_DATA_ROW,
+      1,
+      lastRow - TABLE.FIRST_DATA_ROW + 1,
+      workOrdersSheet.getLastColumn()
+    ).getValues();
+
+    for (let i = 0; i < values.length; i++) {
+
+      const currentRow = TABLE.FIRST_DATA_ROW + i;
+
+      // Skip the excluded row (the WO being reassigned)
+      if (excludeRow !== null && excludeRow !== undefined && currentRow === excludeRow) {
+        continue;
+      }
+
+      const rowMechanicId = String(values[i][config.fields.MechanicID - 1] || "").trim();
+      const status = String(values[i][config.fields.Status - 1] || "").trim();
+
+      if (rowMechanicId === mechanicId && ACTIVE_STATUSES.includes(status)) {
+        return true;
+      }
+
+    }
+
+    return false;
+
+  }
+
+
+
   /**
    * Handles mechanic reassignment from one mechanic to another.
-   * Releases the old mechanic and reserves the new one.
+   * IMPORTANT: This function should only be called AFTER validation has succeeded.
+   * Releases the old mechanic first, then reserves the new one.
+   * The order ensures that if the same mechanic is being reassigned (edge case),
+   * no unnecessary status changes occur.
    *
    * @param {string} oldMechanicId - The previous mechanic ID.
    * @param {string} newMechanicId - The new mechanic ID.
    */
   function handleMechanicReassignment(oldMechanicId, newMechanicId) {
 
-    // Release old mechanic
+    // Release old mechanic FIRST
+    // This ensures the old mechanic becomes Available before we check the new mechanic
     if (oldMechanicId && oldMechanicId !== newMechanicId) {
       syncMechanicStatus(oldMechanicId);
     }
 
-    // Reserve new mechanic
+    // Reserve new mechanic SECOND
+    // At this point, the Work Order row already contains the final mechanic assignment
     if (newMechanicId && newMechanicId !== oldMechanicId) {
       syncMechanicStatus(newMechanicId);
     }

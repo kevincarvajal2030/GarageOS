@@ -216,6 +216,8 @@ function syncWorkOrderMechanic(sheet, row) {
  * Validates mechanic selection when a user selects a mechanic from the dropdown.
  * Reuses the same validation pattern as Vehicles → Customer Name.
  * Rejects selection if mechanic is Busy, Vacation, or Inactive.
+ * For reassignment scenarios (when there's an old value), excludes the current WO row
+ * from the active count to avoid false "Busy" detection.
  *
  * @param {Sheet} sheet - The sheet being edited.
  * @param {number} row - The row being edited.
@@ -248,8 +250,11 @@ function validateMechanicSelection(sheet, row, config, event) {
     return;
   }
 
-  // Check mechanic availability using the service (includes self-healing)
-  const availability = MechanicAssignmentService.isMechanicAvailable(mechanicId);
+  // Check mechanic availability using the service.
+  // For reassignment (oldValue exists), pass the current row to exclude it from active count.
+  // This prevents false rejection when reassigning from a Busy mechanic to an Available one.
+  const workOrderRow = event.oldValue ? row : null;
+  const availability = MechanicAssignmentService.isMechanicAvailable(mechanicId, workOrderRow);
 
   if (!availability.available) {
 
@@ -358,6 +363,10 @@ function syncWorkOrderCompletionDate(sheet, row, config, event) {
 
 /**
  * Synchronizes mechanic status when a Work Order is assigned, changed, or completed.
+ * IMPORTANT: This should only be called AFTER validation has succeeded.
+ * Uses handleMechanicReassignment to ensure proper ordering:
+ * 1. Release old mechanic first
+ * 2. Then reserve new mechanic
  *
  * @param {Sheet} sheet - The sheet being edited.
  * @param {number} row - The row being edited.
@@ -385,22 +394,27 @@ function syncWorkOrderMechanicAssignment(sheet, row, config, event) {
     .getDisplayValue()
     .trim();
 
-  if (!mechanicId) {
-    return;
-  }
 
-  // Sync the mechanic's status based on their active work orders
-  MechanicAssignmentService.syncMechanicStatus(mechanicId);
 
-  // Handle reassignment: if mechanic changed, also sync the old mechanic
+  // Use handleMechanicReassignment for proper ordering:
+  // 1. Release old mechanic first
+  // 2. Then reserve new mechanic
+  // This prevents the new mechanic from being marked Busy before validation completes
   if (mechanicChanged && event.oldValue) {
 
     const oldMechanicId = findMechanicIdByName(String(event.oldValue).trim());
 
     if (oldMechanicId && oldMechanicId !== mechanicId) {
-      MechanicAssignmentService.syncMechanicStatus(oldMechanicId);
+      // Reassignment: release old, then reserve new
+      MechanicAssignmentService.handleMechanicReassignment(oldMechanicId, mechanicId);
+      return;
     }
 
+  }
+
+  // No reassignment (initial assignment or status change): just sync the current mechanic
+  if (mechanicId) {
+    MechanicAssignmentService.syncMechanicStatus(mechanicId);
   }
 
 }

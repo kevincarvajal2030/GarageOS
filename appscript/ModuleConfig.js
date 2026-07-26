@@ -190,7 +190,8 @@ const ModuleConfig = (() => {
         LaborCost: 14,
         PartCost: 15,
         TotalCost: 16, 
-        CompletionDate: 17
+        PaymentStatus: 17,
+        CompletionDate: 18
 
       },
 
@@ -443,7 +444,7 @@ const ModuleConfig = (() => {
         CustomerID: 3,
         WorkOrderID: 4,
         PaymentMethod: 5,
-        Amount: 6,
+        TotalCost: 6,
         PaymentStatus: 7,
         PaymentDate: 8,
         Notes: 9
