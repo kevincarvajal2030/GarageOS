@@ -500,6 +500,65 @@ function syncWorkOrderOpenDate(sheet, row) {
 
 }
 
+/**
+ * Automatically sets the Completion Date when Status changes to Completed.
+ * Clears the Completion Date when Status changes from Completed to any other status.
+ * Also triggers automatic Payment record creation when status becomes Completed.
+ *
+ * Work Orders:
+ * Status = Completed -> Completion Date = Current Date
+ * Status != Completed (was Completed) -> Completion Date = empty
+ * Status = Completed -> Automatic Payment Record Created (if not exists)
+ *
+ * @param {Sheet} sheet - The sheet being edited.
+ * @param {number} row - The row being edited.
+ * @param {Object} config - The module configuration.
+ * @param {Object} event - The edit event object.
+ */
+function syncWorkOrderCompletionDate(sheet, row, config, event) {
 
+  const statusColumn = config.fields.Status;
+  const completionDateColumn = config.fields.CompletionDate;
+
+  // Only act if the Status column was edited
+  if (event.range.getColumn() !== statusColumn) {
+    return;
+  }
+
+  const newStatus = String(event.value || "").trim();
+  const oldStatus = String(event.oldValue || "").trim();
+  const completionDateCell = sheet.getRange(row, completionDateColumn);
+
+  // If status changed to Completed, set completion date to today
+  if (newStatus === "Completed") {
+    completionDateCell.setValue(
+      Utilities.formatDate(
+        new Date(),
+        Session.getScriptTimeZone(),
+        "MM/dd/yyyy"
+      )
+    );
+
+    // Trigger automatic Payment creation
+    createPaymentForCompletedWorkOrder(sheet, row);
+  }
+  // If status changed FROM Completed to something else, clear completion date
+  else if (oldStatus === "Completed" && newStatus !== "Completed") {
+    completionDateCell.clearContent();
+  }
+
+}
+
+
+/**
+ * Creates a Payment record automatically when a Work Order is completed.
+ * This function is called by syncWorkOrderCompletionDate when status becomes "Completed".
+ *
+ * @param {Sheet} sheet - The Work Orders sheet.
+ * @param {number} row - The row of the Work Order being completed.
+ */
+function createPaymentForCompletedWorkOrder(sheet, row) {
+  PaymentService.processWorkOrderCompletion(row);
+}
 
 

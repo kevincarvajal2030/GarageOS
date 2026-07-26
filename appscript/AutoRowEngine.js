@@ -56,6 +56,11 @@ const AutoRowEngine = (() => {
 
     }
 
+    // Payments module - Handle Payment Status changes
+    if (sheet.getName() === SHEETS.PAYMENTS) {
+      handlePaymentsModuleEdit(sheet, row, config, event);
+    }
+
     if (
       sheet.getName() === SHEETS.WORK_ORDERS &&
       event.range.getColumn() === config.fields.VehicleName
@@ -232,6 +237,28 @@ const AutoRowEngine = (() => {
 
     }
 
+  }
+
+
+  /**
+   * Handles edits in the Payments module.
+   * When Payment Status changes, updates Payment Date and synchronizes with Work Order.
+   *
+   * @param {Sheet} sheet - The Payments sheet.
+   * @param {number} row - The row being edited.
+   * @param {Object} config - The module configuration.
+   * @param {Object} event - The edit event object.
+   */
+  function handlePaymentsModuleEdit(sheet, row, config, event) {
+    const paymentStatusColumn = config.fields.PaymentStatus;
+
+    // Only act if the Payment Status column was edited
+    if (event.range.getColumn() !== paymentStatusColumn) {
+      return;
+    }
+
+    // Handle Payment Status change: update date and sync to Work Order
+    PaymentService.handlePaymentStatusChange(row);
   }
 
 

@@ -189,7 +189,7 @@ const ModuleConfig = (() => {
         Diagnosis: 13,
         LaborCost: 14,
         PartCost: 15,
-        TotalCost: 16, 
+        TotalCost: 16,
         PaymentStatus: 17,
         CompletionDate: 18
 
@@ -251,7 +251,7 @@ const ModuleConfig = (() => {
       primaryKey: "ServiceID",
 
       foreignKeys: [
-        
+
       ],
 
       protectedFields: [],
@@ -303,7 +303,7 @@ const ModuleConfig = (() => {
       primaryKey: "PartID",
 
       foreignKeys: [
-        
+
       ],
 
       protectedFields: [],
@@ -355,7 +355,7 @@ const ModuleConfig = (() => {
       primaryKey: "SupplierID",
 
       foreignKeys: [
-        
+
       ],
 
       protectedFields: [],
@@ -408,7 +408,7 @@ const ModuleConfig = (() => {
       primaryKey: "PurchaseID",
 
       foreignKeys: [
-        
+
       ],
 
       protectedFields: [],
@@ -454,10 +454,17 @@ const ModuleConfig = (() => {
       primaryKey: "PaymentID",
 
       foreignKeys: [
-        
+
       ],
 
-      protectedFields: [],
+      protectedFields: [
+
+        "PaymentID",
+        "CustomerName",
+        "CustomerID",
+        "WorkOrderID",
+        "TotalCost"
+      ],
 
       requiredFields: [
 
