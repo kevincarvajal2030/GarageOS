@@ -439,12 +439,14 @@ const ModuleConfig = (() => {
       fields: {
 
         PaymentID: 1,
-        WorkOrderID: 2,
-        PaymentDate: 3,
-        PaymentMethod: 4,
-        Amount: 5,
-        Status: 6,
-        Notes: 7
+        CustomerName: 2,
+        CustomerID: 3,
+        WorkOrderID: 4,
+        PaymentMethod: 5,
+        Amount: 6,
+        PaymentStatus: 7,
+        PaymentDate: 8,
+        Notes: 9
 
       },
 
