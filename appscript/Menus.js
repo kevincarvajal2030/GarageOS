@@ -25,25 +25,48 @@ function createGarageOSMenu() {
 
   SpreadsheetApp.getUi()
 
-    .createMenu(APP.NAME)
+    .createMenu("☰ GarageOS")
 
     .addItem(
-      "Refresh Dashboard",
-      "updateDashboard"
-    )
-
-    .addSeparator()
-
-    .addItem(
-      "Vehicles Viewer",
-      "openVehicleViewerSidebar"
-    )
-
-    .addItem(
-      "About GarageOS",
-      "aboutGarageOS"
+      "Toggle Navigation",
+      "toggleGarageOSSidebar"
     )
 
     .addToUi();
+
+}
+
+
+/******************************************************************************
+ * SIDEBAR TOGGLE
+ ******************************************************************************/
+
+let sidebarIsOpen = false;
+
+function toggleGarageOSSidebar() {
+
+  if (sidebarIsOpen) {
+    closeGarageOSSidebar();
+  } else {
+    openGarageOSSidebar();
+  }
+
+}
+
+function openGarageOSSidebar() {
+
+  const html = HtmlService
+    .createHtmlOutputFromFile("GarageOSMenu")
+    .setTitle("GarageOS Menu");
+
+  SpreadsheetApp.getUi().showSidebar(html);
+  sidebarIsOpen = true;
+
+}
+
+function closeGarageOSSidebar() {
+
+  SpreadsheetApp.getUi().closeSidebar();
+  sidebarIsOpen = false;
 
 }

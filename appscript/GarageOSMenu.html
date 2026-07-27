@@ -1,0 +1,647 @@
+<!-- GarageOSMenu.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(180deg, #111827, #0F172A);
+      color: #E5E7EB;
+      overflow-x: hidden;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* Container */
+    .sidebar-container {
+      width: 260px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 12px;
+    }
+
+    /* Header */
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px 20px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 200ms ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .close-btn .material-icons {
+      color: #9CA3AF;
+      font-size: 20px;
+    }
+
+    /* Navigation Items */
+    .nav-section {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      margin-bottom: 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      text-decoration: none;
+      color: #E5E7EB;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-item .material-icons {
+      font-size: 22px;
+      color: #D1D5DB;
+      flex-shrink: 0;
+    }
+
+    .nav-item span {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* Active State */
+    .nav-item.active {
+      background: #2563EB;
+    }
+
+    .nav-item.active .material-icons {
+      color: #FFFFFF;
+    }
+
+    .nav-item.active span {
+      color: #FFFFFF;
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 60%;
+      background: #3B82F6;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* Divider */
+    .nav-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 20px 8px;
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 14px;
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
+
+    /* Toggle Switch */
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      margin-bottom: 4px;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #E5E7EB;
+      flex: 1;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #6B7280;
+      transition: 200ms ease;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #FFFFFF;
+      transition: 200ms ease;
+      border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #2563EB;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    /* About Dialog Overlay */
+    .dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+
+    .dialog-overlay.visible {
+      display: flex;
+      opacity: 1;
+    }
+
+    .dialog-content {
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      transform: scale(0.95);
+      transition: transform 200ms ease;
+    }
+
+    .dialog-overlay.visible .dialog-content {
+      transform: scale(1);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .dialog-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .dialog-close {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 200ms ease;
+    }
+
+    .dialog-close:hover {
+      background: #F3F4F6;
+    }
+
+    .dialog-close .material-icons {
+      color: #6B7280;
+      font-size: 20px;
+    }
+
+    .dialog-body {
+      color: #374151;
+    }
+
+    .info-row {
+      margin-bottom: 16px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: #111827;
+      line-height: 1.5;
+    }
+
+    .tech-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tech-badge {
+      background: #F3F4F6;
+      color: #374151;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #2563EB;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 8px;
+      transition: color 200ms ease;
+    }
+
+    .github-link:hover {
+      color: #1D4ED8;
+    }
+
+    /* Animation for sidebar slide */
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .sidebar-container {
+      animation: slideIn 250ms ease-out;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="sidebar-container">
+
+    <!-- Header -->
+    <div class="sidebar-header">
+      <span class="sidebar-logo">GarageOS</span>
+      <button class="close-btn" onclick="closeSidebar()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-section">
+
+      <!-- Dashboard -->
+      <div class="nav-item" data-module="dashboard" onclick="navigateTo('dashboard')">
+        <span class="material-icons">dashboard</span>
+        <span>Dashboard</span>
+      </div>
+
+      <!-- Customers -->
+      <div class="nav-item" data-module="customers" onclick="navigateTo('customers')">
+        <span class="material-icons">group</span>
+        <span>Customers</span>
+      </div>
+
+      <!-- Vehicles -->
+      <div class="nav-item" data-module="vehicles" onclick="navigateTo('vehicles')">
+        <span class="material-icons">directions_car</span>
+        <span>Vehicles</span>
+      </div>
+
+      <!-- Work Orders -->
+      <div class="nav-item" data-module="workorders" onclick="navigateTo('workorders')">
+        <span class="material-icons">assignment</span>
+        <span>Work Orders</span>
+      </div>
+
+      <!-- Payments -->
+      <div class="nav-item" data-module="payments" onclick="navigateTo('payments')">
+        <span class="material-icons">payments</span>
+        <span>Payments</span>
+      </div>
+
+      <!-- Mechanics -->
+      <div class="nav-item" data-module="mechanics" onclick="navigateTo('mechanics')">
+        <span class="material-icons">build</span>
+        <span>Mechanics</span>
+      </div>
+
+      <!-- Reference Data -->
+      <div class="nav-item" data-module="referencedata" onclick="navigateTo('referencedata')">
+        <span class="material-icons">dataset</span>
+        <span>Reference Data</span>
+      </div>
+
+      <!-- Divider -->
+      <div class="nav-divider"></div>
+
+      <!-- Preferences Section -->
+      <div class="section-title">Preferences</div>
+
+      <div class="toggle-container">
+        <span class="toggle-label">Auto Open Vehicle Viewer</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="autoOpenToggle" onchange="toggleAutoOpen(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Divider -->
+      <div class="nav-divider"></div>
+
+      <!-- About GarageOS -->
+      <div class="nav-item" data-module="about" onclick="showAboutDialog()">
+        <span class="material-icons">info</span>
+        <span>About GarageOS</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- About Dialog -->
+  <div class="dialog-overlay" id="aboutDialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <span class="dialog-title">GarageOS</span>
+        <button class="dialog-close" onclick="hideAboutDialog()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <div class="info-row">
+          <div class="info-label">Version</div>
+          <div class="info-value" id="versionValue">Loading...</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Description</div>
+          <div class="info-value">Professional garage management system built on Google Sheets.</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Technologies</div>
+          <div class="tech-list">
+            <span class="tech-badge">Google Sheets</span>
+            <span class="tech-badge">Google Apps Script</span>
+            <span class="tech-badge">HTML</span>
+            <span class="tech-badge">CSS</span>
+            <span class="tech-badge">JavaScript</span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Author</div>
+          <div class="info-value">GarageOS Team</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- GLOBAL STATE ---
+    let currentModule = '';
+    let autoOpenEnabled = false;
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      loadPreferences();
+      detectCurrentModule();
+      loadVersion();
+    };
+
+    // --- PREFERENCES ---
+    function loadPreferences() {
+      google.script.run
+        .withSuccessHandler(function(enabled) {
+          autoOpenEnabled = enabled;
+          document.getElementById('autoOpenToggle').checked = enabled;
+        })
+        .withFailureHandler(function(err) {
+          console.error("Error loading preferences:", err);
+        })
+        .getAutoOpenVehicleViewerPreference();
+    }
+
+    function toggleAutoOpen(checked) {
+      autoOpenEnabled = checked;
+      google.script.run
+        .withFailureHandler(function(err) {
+          console.error("Error saving preference:", err);
+          // Revert toggle on error
+          document.getElementById('autoOpenToggle').checked = !checked;
+        })
+        .setAutoOpenVehicleViewerPreference(checked);
+    }
+
+    // --- NAVIGATION ---
+    function navigateTo(module) {
+      currentModule = module;
+      updateActiveState();
+
+      const sheetMap = {
+        'dashboard': '00_Dashboard',
+        'customers': '01_Customers',
+        'vehicles': '02_Vehicles',
+        'workorders': '03_Work_Orders',
+        'payments': '08_Payments',
+        'mechanics': '09_Mechanics',
+        'referencedata': '10_Reference_Data'
+      };
+
+      const sheetName = sheetMap[module];
+
+      if (!sheetName) return;
+
+      google.script.run
+        .withSuccessHandler(function() {
+          // Check if we should auto-open Vehicle Viewer
+          if (autoOpenEnabled && (module === 'vehicles' || module === 'workorders')) {
+            openVehicleViewer();
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.error("Navigation error:", err);
+        })
+        .activateSheetByName(sheetName);
+    }
+
+    function openVehicleViewer() {
+      google.script.run
+        .withFailureHandler(function(err) {
+          console.error("Error opening Vehicle Viewer:", err);
+        })
+        .openVehicleViewerSidebar();
+    }
+
+    // --- ACTIVE STATE ---
+    function detectCurrentModule() {
+      google.script.run
+        .withSuccessHandler(function(sheetName) {
+          currentModule = sheetNameToModule(sheetName);
+          updateActiveState();
+        })
+        .withFailureHandler(function(err) {
+          console.error("Error detecting module:", err);
+        })
+        .getActiveSheetName();
+    }
+
+    function sheetNameToModule(sheetName) {
+      const map = {
+        '00_Dashboard': 'dashboard',
+        '01_Customers': 'customers',
+        '02_Vehicles': 'vehicles',
+        '03_Work_Orders': 'workorders',
+        '08_Payments': 'payments',
+        '09_Mechanics': 'mechanics',
+        '10_Reference_Data': 'referencedata'
+      };
+      return map[sheetName] || '';
+    }
+
+    function updateActiveState() {
+      document.querySelectorAll('.nav-item').forEach(function(item) {
+        const module = item.getAttribute('data-module');
+        if (module === currentModule) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    // --- CLOSE SIDEBAR ---
+    function closeSidebar() {
+      google.script.run
+        .withFailureHandler(function(err) {
+          console.error("Error closing sidebar:", err);
+        })
+        .closeGarageOSSidebar();
+    }
+
+    // --- ABOUT DIALOG ---
+    function showAboutDialog() {
+      document.getElementById('aboutDialog').classList.add('visible');
+    }
+
+    function hideAboutDialog() {
+      document.getElementById('aboutDialog').classList.remove('visible');
+    }
+
+    function loadVersion() {
+      google.script.run
+        .withSuccessHandler(function(version) {
+          document.getElementById('versionValue').textContent = version || '1.0.1';
+        })
+        .withFailureHandler(function(err) {
+          console.error("Error loading version:", err);
+          document.getElementById('versionValue').textContent = '1.0.1';
+        })
+        .getAppVersion();
+    }
+
+    // Close dialog on overlay click
+    document.getElementById('aboutDialog').addEventListener('click', function(e) {
+      if (e.target === this) {
+        hideAboutDialog();
+      }
+    });
+  </script>
+
+</body>
+
+</html>
