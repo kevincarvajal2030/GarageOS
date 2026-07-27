@@ -43,6 +43,23 @@ function setAutoOpenVehicleViewerPreference(enabled) {
 
 
 /******************************************************************************
+ * DASHBOARD
+ ******************************************************************************/
+
+/**
+ * Opens the Dashboard sidebar.
+ */
+function showDashboardSidebar() {
+
+  const html = HtmlService
+    .createHtmlOutputFromFile("Dashboard")
+    .setTitle("Dashboard");
+
+  SpreadsheetApp.getUi().showSidebar(html);
+
+}
+
+/******************************************************************************
  * NAVIGATION
  ******************************************************************************/
 

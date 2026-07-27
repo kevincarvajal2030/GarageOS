@@ -588,6 +588,20 @@
 
       if (!sheetName) return;
 
+      // Special handling for Dashboard - open sidebar instead of just switching sheets
+      if (module === 'dashboard') {
+        google.script.run
+          .withSuccessHandler(function() {
+            // Also activate the dashboard sheet
+            google.script.run.activateSheetByName(sheetName);
+          })
+          .withFailureHandler(function(err) {
+            console.error("Dashboard error:", err);
+          })
+          .showDashboardSidebar();
+        return;
+      }
+      
       google.script.run
         .withSuccessHandler(function() {
           // Check if we should auto-open Vehicle Viewer

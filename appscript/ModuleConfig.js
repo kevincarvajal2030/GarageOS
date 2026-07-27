@@ -26,6 +26,37 @@ const ModuleConfig = (() => {
 
   const MODULES = {
 
+    "00_Dashboard": {
+
+      sheetName: "00_Dashboard",
+
+      entityName: "Dashboard",
+
+      idPrefix: "",
+
+      counterKey: "",
+
+      autoGenerateId: false,
+
+      allowManualDelete: false,
+
+      allowManualEdition: false,
+
+      fields: {},
+
+      primaryKey: "",
+
+      foreignKeys: [],
+
+      protectedFields: [],
+
+      requiredFields: [],
+
+      duplicateFields: []
+
+    },
+
+
     "01_Customers": {
 
       sheetName: "01_Customers",
