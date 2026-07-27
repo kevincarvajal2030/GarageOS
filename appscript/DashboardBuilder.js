@@ -121,6 +121,119 @@ const DashboardBuilder = (() => {
     sheet.setRowHeights(1, 60, 21);
   }
 
+
+  /**
+   * Verifies if the dashboard layout exists and is complete.
+   * Only builds missing sections - never rebuilds the entire dashboard.
+   * @returns {boolean} True if layout was already complete, false if sections were built
+   */
+  function verifyDashboardLayout() {
+    const sheet = getSheet(DASHBOARD_SHEET);
+
+    // If sheet doesn't exist, we can't verify - caller should handle this
+    if (!sheet) {
+      return false;
+    }
+
+    let needsBuild = false;
+
+    // Check each section independently
+    if (!checkHeaderExists(sheet)) {
+      buildDashboardHeader(sheet);
+      needsBuild = true;
+    }
+
+    if (!checkKPICardsExist(sheet)) {
+      buildKPICards(sheet);
+      needsBuild = true;
+    }
+
+    if (!checkChartsExist(sheet)) {
+      buildChartsSection(sheet);
+      needsBuild = true;
+    }
+
+    if (!checkTablesExist(sheet)) {
+      buildTablesSection(sheet);
+      needsBuild = true;
+    }
+
+    if (!checkStylingExists(sheet)) {
+      styleDashboard(sheet);
+      needsBuild = true;
+    }
+
+    // Build footer if missing or if anything else was built
+    if (needsBuild || !checkFooterExists(sheet)) {
+      buildFooter(sheet);
+    }
+
+    return !needsBuild;
+  }
+
+  /**
+   * Checks if the dashboard header exists.
+   * @param {Sheet} sheet
+   * @returns {boolean}
+   */
+  function checkHeaderExists(sheet) {
+    const title = sheet.getRange("A1").getValue();
+    return title && String(title).toLowerCase().includes("dashboard");
+  }
+
+  /**
+   * Checks if KPI cards exist.
+   * @param {Sheet} sheet
+   * @returns {boolean}
+   */
+  function checkKPICardsExist(sheet) {
+    const kpiValue = sheet.getRange("E5").getValue();
+    return kpiValue !== null && kpiValue !== "";
+  }
+
+  /**
+   * Checks if charts section exists.
+   * @param {Sheet} sheet
+   * @returns {boolean}
+   */
+  function checkChartsExist(sheet) {
+    const analyticsTitle = sheet.getRange("A13").getValue();
+    return analyticsTitle && String(analyticsTitle).toLowerCase().includes("analytics");
+  }
+
+  /**
+   * Checks if tables section exists.
+   * @param {Sheet} sheet
+   * @returns {boolean}
+   */
+  function checkTablesExist(sheet) {
+    const woTitle = sheet.getRange("A27").getValue();
+    return woTitle && String(woTitle).toLowerCase().includes("recent work orders");
+  }
+
+  /**
+   * Checks if footer exists.
+   * @param {Sheet} sheet
+   * @returns {boolean}
+   */
+  function checkFooterExists(sheet) {
+    const footer = sheet.getRange("A50").getValue();
+    return footer && String(footer).includes("GarageOS");
+  }
+
+  /**
+   * Checks if basic styling exists.
+   * @param {Sheet} sheet
+   * @returns {boolean}
+   */
+  function checkStylingExists(sheet) {
+    const colWidth = sheet.getColumnWidth(1);
+    return colWidth >= 100; // Styled columns are wider than default
+  }
+
+
+
+
   /**
    * Builds the dashboard header section.
    * @param {Sheet} sheet
@@ -665,6 +778,13 @@ const DashboardBuilder = (() => {
   return {
     buildDashboard,
     buildDashboardLayout: buildDashboard,
+    verifyDashboardLayout,
+    checkHeaderExists,
+    checkKPICardsExist,
+    checkChartsExist,
+    checkTablesExist,
+    checkFooterExists,
+    checkStylingExists,
     buildDashboardHeader,
     buildKPICards,
     buildChartsSection,

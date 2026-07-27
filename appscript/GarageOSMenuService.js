@@ -47,12 +47,10 @@ function setAutoOpenVehicleViewerPreference(enabled) {
  ******************************************************************************/
 
 /**
- * Opens the Dashboard by rebuilding it and activating the sheet.
+ * Opens the Dashboard by activating the sheet and refreshing data.
+ * Does NOT rebuild the layout - only refreshes existing dashboard data.
  */
 function showDashboardSidebar() {
-
-  // Rebuild the dashboard using native Google Sheets layout
-  buildDashboard();
 
   // Activate the dashboard sheet
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -60,6 +58,19 @@ function showDashboardSidebar() {
 
   if (sheet) {
     ss.setActiveSheet(sheet);
+    // Refresh dashboard data without rebuilding layout
+    refreshDashboardData();
+
+  } else {
+    // If dashboard sheet doesn't exist, build it first
+    buildDashboard();
+
+    const newSheet = ss.getSheetByName("00_Dashboard");
+
+    if (newSheet) {
+      ss.setActiveSheet(newSheet);
+    }
+
   }
 
 }

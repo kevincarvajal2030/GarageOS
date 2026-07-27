@@ -588,7 +588,7 @@
 
       if (!sheetName) return;
 
-      // Special handling for Dashboard - rebuild and activate the sheet
+      // Special handling for Dashboard - activate sheet and refresh data (no rebuild)
       if (module === 'dashboard') {
         google.script.run
           .withSuccessHandler(function() {

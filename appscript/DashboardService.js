@@ -743,3 +743,27 @@ function getWorkOrderStatusChart() {
 function refreshDashboard() {
   return DashboardService.refreshDashboard();
 }
+
+
+/**
+ * Refreshes dashboard data by updating KPI formulas and chart data ranges.
+ * This does NOT rebuild the layout - only refreshes data.
+ */
+function refreshDashboardData() {
+  const sheet = getSheet(SHEETS.DASHBOARD);
+  if (!sheet) {
+    throw new Error("Dashboard sheet not found");
+  }
+
+  // Force recalculation of all formulas by touching a cell
+  // This triggers Google Sheets to recalculate all dependent formulas
+  const lastUpdated = sheet.getRange("I1");
+  lastUpdated.setFormula('=TEXT(NOW(),"MM/dd/yyyy HH:mm")');
+
+  // Trigger chart data refresh by updating hidden data areas
+  DashboardBuilder.buildChartsSection(sheet);
+
+  showToast("Dashboard data refreshed", "GarageOS");
+}
+
+
