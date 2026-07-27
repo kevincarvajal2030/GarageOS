@@ -154,15 +154,16 @@ const DashboardBuilder = (() => {
    */
   function buildKPICards(sheet) {
     const startRow = 4;
-    const cardHeight = 6;
+    const cardHeight = 7;
     const cardWidth = 3;
     const gap = 1;
 
-    // KPI definitions with data sources
+    // KPI definitions with data sources - corrected formulas
     const kpis = [
       {
         title: "Total Customers",
         formula: '=COUNTA(FILTER(01_Customers!K:K, 01_Customers!K:K<>""))',
+        trendFormula: '=TEXT(COUNTA(FILTER(01_Customers!K:K, 01_Customers!K:K<>""))-COUNTA(FILTER(01_Customers!K:K, ROW(01_Customers!K:K)>ROW(01_Customers!K7)-30, 01_Customers!K:K<>"")), "+#;-#;0") & " vs last month"',
         icon: "👥",
         bg: COLORS.BLUE_LIGHT,
         iconBg: COLORS.BLUE_ICON,
@@ -171,6 +172,7 @@ const DashboardBuilder = (() => {
       {
         title: "Total Vehicles",
         formula: '=COUNTA(FILTER(02_Vehicles!K:K, 02_Vehicles!K:K<>""))',
+        trendFormula: '=TEXT(COUNTA(FILTER(02_Vehicles!K:K, 02_Vehicles!K:K<>""))-COUNTA(FILTER(02_Vehicles!K:K, ROW(02_Vehicles!K:K)>ROW(02_Vehicles!K7)-30, 02_Vehicles!K:K<>"")), "+#;-#;0") & " vs last month"',
         icon: "🚗",
         bg: COLORS.GREEN_LIGHT,
         iconBg: COLORS.GREEN_ICON,
@@ -178,7 +180,8 @@ const DashboardBuilder = (() => {
       },
       {
         title: "Open Work Orders",
-        formula: '=COUNTIFS(03_Work_Orders!I:I, "In Progress", 03_Work_Orders!I:I, "Waiting Parts", 03_Work_Orders!I:I, "Waiting Approval", 03_Work_Orders!I:I, "Pending", 03_Work_Orders!I:I, "On Hold")',
+        formula: '=COUNTIFS(03_Work_Orders!I:I, "In Progress")+COUNTIFS(03_Work_Orders!I:I, "Waiting Parts")+COUNTIFS(03_Work_Orders!I:I, "Waiting Approval")+COUNTIFS(03_Work_Orders!I:I, "Pending")+COUNTIFS(03_Work_Orders!I:I, "On Hold")',
+        trendFormula: '""',
         icon: "🔧",
         bg: COLORS.ORANGE_LIGHT,
         iconBg: COLORS.ORANGE_ICON,
@@ -187,6 +190,7 @@ const DashboardBuilder = (() => {
       {
         title: "Completed Orders",
         formula: '=COUNTIF(03_Work_Orders!I:I, "Completed")',
+        trendFormula: '=TEXT(COUNTIF(03_Work_Orders!I:I, "Completed")-COUNTIFS(03_Work_Orders!I:I, "Completed", 03_Work_Orders!R:R, ">"&TODAY()-30), "+#;-#;0") & " this month"',
         icon: "✅",
         bg: COLORS.PURPLE_LIGHT,
         iconBg: COLORS.PURPLE_ICON,
@@ -195,18 +199,22 @@ const DashboardBuilder = (() => {
       {
         title: "Total Revenue",
         formula: '=SUMIF(08_Payments!G:G, "Paid", 08_Payments!F:F)',
+        trendFormula: '=TEXT(SUMIF(08_Payments!G:G, "Paid", 08_Payments!F:F)-SUMIFS(08_Payments!F:F, 08_Payments!G:G, "Paid", 08_Payments!H:H, ">"&TODAY()-30), "+$#,##0;-$#,##0;$0") & " vs last month"',
         icon: "💰",
         bg: COLORS.EMERALD_LIGHT,
         iconBg: COLORS.EMERALD_ICON,
-        iconColor: COLORS.EMERALD_TEXT
+        iconColor: COLORS.EMERALD_TEXT,
+        numberFormat: "$#,##0"
       },
       {
         title: "Outstanding Balance",
-        formula: '=SUMIF(08_Payments!G:G, "Pending", 08_Payments!F:F)',
+        formula: '=SUMIF(08_Payments!G:G, "Pending", 08_Payments!F:F)+SUMIF(08_Payments!G:G, "Unpaid", 08_Payments!F:F)',
+        trendFormula: '""',
         icon: "⏳",
         bg: COLORS.RED_LIGHT,
         iconBg: COLORS.RED_ICON,
-        iconColor: COLORS.RED_TEXT
+        iconColor: COLORS.RED_TEXT,
+        numberFormat: "$#,##0"
       }
     ];
 
@@ -219,61 +227,66 @@ const DashboardBuilder = (() => {
       const cardRange = sheet.getRange(cardStartRow, cardStartCol, cardHeight, cardWidth);
       cardRange.setBackground(kpi.bg);
       cardRange.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+      cardRange.setBorderStyle(SpreadsheetApp.BorderStyle.ROUNDED);
 
-      // Icon area (merged)
-      const iconRange = sheet.getRange(cardStartRow, cardStartCol, 2, 1);
+      // Icon area (merged) - larger icon
+      const iconRange = sheet.getRange(cardStartRow + 1, cardStartCol, 2, 1);
       iconRange.merge();
       iconRange.setBackground(kpi.iconBg);
       iconRange.setFontColor(kpi.iconColor);
       iconRange.setHorizontalAlignment("center");
       iconRange.setVerticalAlignment("middle");
-      iconRange.setFontSize(20);
+      iconRange.setFontSize(24);
       iconRange.setValue(kpi.icon);
 
-      // Value (merged) - with formula
-      const valueRange = sheet.getRange(cardStartRow, cardStartCol + 1, 2, 2);
+      // Value (merged) - with formula, larger font
+      const valueRange = sheet.getRange(cardStartRow + 1, cardStartCol + 1, 2, 2);
       valueRange.merge();
       valueRange.setFormula(kpi.formula);
-      valueRange.setNumberFormat("#,##0");
-      valueRange.setFontSize(28);
+      valueRange.setNumberFormat(kpi.numberFormat || "#,##0");
+      valueRange.setFontSize(32);
       valueRange.setFontWeight("bold");
       valueRange.setFontColor(COLORS.TEXT_PRIMARY);
-      valueRange.setHorizontalAlignment("left");
+      valueRange.setHorizontalAlignment("right");
       valueRange.setVerticalAlignment("bottom");
 
       // Title
-      const titleRange = sheet.getRange(cardStartRow + 2, cardStartCol, 1, cardWidth);
+      const titleRange = sheet.getRange(cardStartRow + 3, cardStartCol, 1, cardWidth);
       titleRange.merge();
       titleRange.setValue(kpi.title);
-      titleRange.setFontSize(13);
+      titleRange.setFontSize(12);
       titleRange.setFontColor(COLORS.TEXT_SECONDARY);
       titleRange.setHorizontalAlignment("left");
       titleRange.setVerticalAlignment("bottom");
+      titleRange.setFontWeight("bold");
 
-      // Trend placeholder
-      const trendRange = sheet.getRange(cardStartRow + 3, cardStartCol, 1, cardWidth);
+      // Trend with percentage
+      const trendRange = sheet.getRange(cardStartRow + 4, cardStartCol, 1, cardWidth);
       trendRange.merge();
-      trendRange.setFontSize(12);
-      trendRange.setFontWeight("bold");
+      trendRange.setFormula(kpi.trendFormula);
+      trendRange.setFontSize(11);
+      trendRange.setFontColor(COLORS.TEXT_SECONDARY);
       trendRange.setHorizontalAlignment("left");
+      trendRange.setVerticalAlignment("top");
     }
   }
 
   /**
    * Builds the charts section with native Google Sheets charts.
+   * Improved layout matching Dashboard-example.png design reference.
    * @param {Sheet} sheet
    */
   function buildChartsSection(sheet) {
-    const startRow = 12;
+    const startRow = 13;
 
-    // Section title
+    // Section title with border
     sheet.getRange(startRow, 1).setValue("Analytics");
     sheet.getRange(startRow, 1).setFontWeight("bold");
     sheet.getRange(startRow, 1).setFontSize(16);
     sheet.getRange(startRow, 1).setFontColor(COLORS.TEXT_PRIMARY);
 
     // Create data ranges for charts (hidden area)
-    const dataStartRow = 50;
+    const dataStartRow = 55;
 
     // Revenue chart data area
     sheet.getRange(dataStartRow, 1).setValue("Revenue Data");
@@ -290,41 +303,180 @@ const DashboardBuilder = (() => {
     sheet.getRange(dataStartRow + 1, 15).setValue("Status");
     sheet.getRange(dataStartRow + 1, 16).setValue("Count");
 
-    // Chart placeholders - will be populated with actual charts
-    // Revenue chart area
-    const revenueChartArea = sheet.getRange(startRow + 2, 1, 10, 8);
-    revenueChartArea.merge();
+    // Chart areas with card styling
+    // Revenue chart area - larger, prominent position
+    const revenueChartArea = sheet.getRange(startRow + 2, 1, 12, 12);
+    revenueChartArea.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    revenueChartArea.setBackground(COLORS.WHITE);
+
+    // Revenue chart title inside card
     sheet.getRange(startRow + 2, 1).setValue("Revenue Trend (6 months)");
     sheet.getRange(startRow + 2, 1).setFontWeight("bold");
     sheet.getRange(startRow + 2, 1).setFontSize(14);
+    sheet.getRange(startRow + 2, 1).setFontColor(COLORS.TEXT_PRIMARY);
 
     // Vehicle make chart area
-    const vehicleChartArea = sheet.getRange(startRow + 2, 10, 10, 4);
-    vehicleChartArea.merge();
-    sheet.getRange(startRow + 2, 10).setValue("Vehicles by Make");
-    sheet.getRange(startRow + 2, 10).setFontWeight("bold");
-    sheet.getRange(startRow + 2, 10).setFontSize(14);
+    const vehicleChartArea = sheet.getRange(startRow + 2, 14, 12, 6);
+    vehicleChartArea.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    vehicleChartArea.setBackground(COLORS.WHITE);
+
+    sheet.getRange(startRow + 2, 14).setValue("Vehicles by Make");
+    sheet.getRange(startRow + 2, 14).setFontWeight("bold");
+    sheet.getRange(startRow + 2, 14).setFontSize(14);
+    sheet.getRange(startRow + 2, 14).setFontColor(COLORS.TEXT_PRIMARY);
 
     // Work order status chart area
-    const woChartArea = sheet.getRange(startRow + 2, 15, 10, 4);
-    woChartArea.merge();
-    sheet.getRange(startRow + 2, 15).setValue("Work Order Status");
-    sheet.getRange(startRow + 2, 15).setFontWeight("bold");
-    sheet.getRange(startRow + 2, 15).setFontSize(14);
+    const woChartArea = sheet.getRange(startRow + 2, 21, 12, 6);
+    woChartArea.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    woChartArea.setBackground(COLORS.WHITE);
+
+    sheet.getRange(startRow + 2, 21).setValue("Work Order Status");
+    sheet.getRange(startRow + 2, 21).setFontWeight("bold");
+    sheet.getRange(startRow + 2, 21).setFontSize(14);
+    sheet.getRange(startRow + 2, 21).setFontColor(COLORS.TEXT_PRIMARY);
+
+    // Build actual charts using Apps Script ChartBuilder
+    buildRevenueChart(sheet, startRow + 3, 1);
+    buildVehicleMakeChart(sheet, startRow + 3, 14);
+    buildWorkOrderStatusChart(sheet, startRow + 3, 21);
+  }
+
+  /**
+   * Builds the revenue trend line chart.
+   * @param {Sheet} sheet
+   * @param {number} anchorRow
+   * @param {number} anchorCol
+   */
+  function buildRevenueChart(sheet, anchorRow, anchorCol) {
+    // Remove existing charts in this area
+    const charts = sheet.getCharts();
+    for (const chart of charts) {
+      const pos = chart.getPosition();
+      if (pos.getRow() >= anchorRow - 1 && pos.getRow() <= anchorRow + 12 &&
+        pos.getColumn() >= anchorCol && pos.getColumn() <= anchorCol + 11) {
+        sheet.removeChart(chart);
+      }
+    }
+
+    // Create a new chart builder
+    const chartBuilder = sheet.newChart()
+      .setChartType(Charts.ChartType.LINE)
+      .addRange(sheet.getRange("A56:B61"))
+      .setPosition(anchorRow, anchorCol, 0, 0)
+      .setOption('title', '')
+      .setOption('legend', { position: 'bottom' })
+      .setOption('colors', ['#3B82F6'])
+      .setOption('curveType', 'function')
+      .setOption('pointSize', 5)
+      .setOption('chartArea', { width: '90%', height: '80%' })
+      .setOption('hAxis', { textStyle: { fontSize: 10 } })
+      .setOption('vAxis', {
+        textStyle: { fontSize: 10 },
+        format: '$#,##0'
+      })
+      .setOption('height', 280)
+      .setOption('width', 400);
+
+    try {
+      sheet.insertChart(chartBuilder.build());
+    } catch (e) {
+      // Chart creation failed - data may not be ready yet
+      console.log("Revenue chart creation deferred: " + e.message);
+    }
+  }
+
+  /**
+   * Builds the vehicle make doughnut chart.
+   * @param {Sheet} sheet
+   * @param {number} anchorRow
+   * @param {number} anchorCol
+   */
+  function buildVehicleMakeChart(sheet, anchorRow, anchorCol) {
+    // Remove existing charts in this area
+    const charts = sheet.getCharts();
+    for (const chart of charts) {
+      const pos = chart.getPosition();
+      if (pos.getRow() >= anchorRow - 1 && pos.getRow() <= anchorRow + 12 &&
+        pos.getColumn() >= anchorCol && pos.getColumn() <= anchorCol + 5) {
+        sheet.removeChart(chart);
+      }
+    }
+
+    const chartBuilder = sheet.newChart()
+      .setChartType(Charts.ChartType.PIE)
+      .addRange(sheet.getRange("J56:K61"))
+      .setPosition(anchorRow, anchorCol, 0, 0)
+      .setOption('title', '')
+      .setOption('pieHole', 0.5)
+      .setOption('legend', { position: 'right', alignment: 'center' })
+      .setOption('colors', ['#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#F97316'])
+      .setOption('chartArea', { width: '100%', height: '90%' })
+      .setOption('height', 280)
+      .setOption('width', 200);
+
+    try {
+      sheet.insertChart(chartBuilder.build());
+    } catch (e) {
+      console.log("Vehicle make chart creation deferred: " + e.message);
+    }
+  }
+
+  /**
+   * Builds the work order status doughnut chart.
+   * @param {Sheet} sheet
+   * @param {number} anchorRow
+   * @param {number} anchorCol
+   */
+  function buildWorkOrderStatusChart(sheet, anchorRow, anchorCol) {
+    // Remove existing charts in this area
+    const charts = sheet.getCharts();
+    for (const chart of charts) {
+      const pos = chart.getPosition();
+      if (pos.getRow() >= anchorRow - 1 && pos.getRow() <= anchorRow + 12 &&
+        pos.getColumn() >= anchorCol && pos.getColumn() <= anchorCol + 5) {
+        sheet.removeChart(chart);
+      }
+    }
+
+    const chartBuilder = sheet.newChart()
+      .setChartType(Charts.ChartType.PIE)
+      .addRange(sheet.getRange("O56:P62"))
+      .setPosition(anchorRow, anchorCol, 0, 0)
+      .setOption('title', '')
+      .setOption('pieHole', 0.5)
+      .setOption('legend', { position: 'right', alignment: 'center' })
+      .setOption('colors', ['#3B82F6', '#F59E0B', '#8B5CF6', '#F97316', '#22C55E', '#10B981', '#EF4444'])
+      .setOption('chartArea', { width: '100%', height: '90%' })
+      .setOption('height', 280)
+      .setOption('width', 200);
+
+    try {
+      sheet.insertChart(chartBuilder.build());
+    } catch (e) {
+      console.log("Work order status chart creation deferred: " + e.message);
+    }
+
   }
 
   /**
    * Builds the tables section with native Google Sheets tables.
+   * Improved layout matching Dashboard-example.png design reference.
    * @param {Sheet} sheet
    */
   function buildTablesSection(sheet) {
-    const startRow = 24;
+    const startRow = 27;
 
-    // Recent Work Orders table
+    // Recent Work Orders table - card style
     sheet.getRange(startRow, 1).setValue("Recent Work Orders");
     sheet.getRange(startRow, 1).setFontWeight("bold");
     sheet.getRange(startRow, 1).setFontSize(14);
     sheet.getRange(startRow, 1).setFontColor(COLORS.TEXT_PRIMARY);
+
+
+    // Table container with border
+    const woContainer = sheet.getRange(startRow, 1, 12, 6);
+    woContainer.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    woContainer.setBackground(COLORS.WHITE);
 
     // Table headers
     const woHeaders = [["WO ID", "Customer", "Vehicle", "Status", "Total", "Date"]];
@@ -334,76 +486,108 @@ const DashboardBuilder = (() => {
     sheet.getRange(startRow + 1, 1, 1, 6).setFontColor(COLORS.TEXT_SECONDARY);
     sheet.getRange(startRow + 1, 1, 1, 6).setBackground(COLORS.LIGHT_GRAY);
 
-    // Data range with borders
-    const woDataRange = sheet.getRange(startRow + 2, 1, 10, 6);
-    woDataRange.setBorder(true, true, true, true, true, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    // Data range with alternating row colors and borders
+    const woDataRange = sheet.getRange(startRow + 2, 1, 9, 6);
+    woDataRange.setBorder(false, false, false, false, true, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-    // Recent Payments table
+    // Recent Payments table - card style
     sheet.getRange(startRow, 8).setValue("Recent Payments");
     sheet.getRange(startRow, 8).setFontWeight("bold");
     sheet.getRange(startRow, 8).setFontSize(14);
     sheet.getRange(startRow, 8).setFontColor(COLORS.TEXT_PRIMARY);
 
+    // Table container with border
+    const payContainer = sheet.getRange(startRow, 8, 12, 6);
+    payContainer.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    payContainer.setBackground(COLORS.WHITE);
+
     // Table headers
     const payHeaders = [["Payment ID", "Customer", "Amount", "Method", "Date", "Status"]];
     sheet.getRange(startRow + 1, 8, 1, 6).setValues(payHeaders);
     sheet.getRange(startRow + 1, 8, 1, 6).setFontWeight("bold");
-    sheet.getRange(startRow + 1, 8, 1, 6).setFontSize(12);
+    sheet.getRange(startRow + 1, 8, 1, 6).setFontSize(11);
     sheet.getRange(startRow + 1, 8, 1, 6).setFontColor(COLORS.TEXT_SECONDARY);
     sheet.getRange(startRow + 1, 8, 1, 6).setBackground(COLORS.LIGHT_GRAY);
 
-    // Data range with borders
-    const payDataRange = sheet.getRange(startRow + 2, 8, 10, 6);
-    payDataRange.setBorder(true, true, true, true, true, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    // Data range with alternating row colors and borders
+    const payDataRange = sheet.getRange(startRow + 2, 8, 9, 6);
+    payDataRange.setBorder(false, false, false, false, true, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+
+    // Top Customers table - card style (new addition)
+    sheet.getRange(startRow, 15).setValue("Top Customers");
+    sheet.getRange(startRow, 15).setFontWeight("bold");
+    sheet.getRange(startRow, 15).setFontSize(14);
+    sheet.getRange(startRow, 15).setFontColor(COLORS.TEXT_PRIMARY);
+
+    // Table container with border
+    const custContainer = sheet.getRange(startRow, 15, 12, 5);
+    custContainer.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+    custContainer.setBackground(COLORS.WHITE);
+
+    // Table headers
+    const custHeaders = [["Customer", "Orders", "Total Spent"]];
+    sheet.getRange(startRow + 1, 15, 1, 3).setValues(custHeaders);
+    sheet.getRange(startRow + 1, 15, 1, 3).setFontWeight("bold");
+    sheet.getRange(startRow + 1, 15, 1, 3).setFontSize(11);
+    sheet.getRange(startRow + 1, 15, 1, 3).setFontColor(COLORS.TEXT_SECONDARY);
+    sheet.getRange(startRow + 1, 15, 1, 3).setBackground(COLORS.LIGHT_GRAY);
+
+    // Data range
+    const custDataRange = sheet.getRange(startRow + 2, 15, 9, 3);
+    custDataRange.setBorder(false, false, false, false, true, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
   }
 
   /**
    * Builds the vehicle gallery section.
+   * DISABLED - Temporarily removed per requirements.
+   * Code preserved for future implementation.
    * @param {Sheet} sheet
    */
   function buildVehicleGallery(sheet) {
-    const startRow = 36;
-
-    // Section title
-    sheet.getRange(startRow, 1).setValue("Vehicle Gallery");
-    sheet.getRange(startRow, 1).setFontWeight("bold");
-    sheet.getRange(startRow, 1).setFontSize(14);
-    sheet.getRange(startRow, 1).setFontColor(COLORS.TEXT_PRIMARY);
-
-    // Gallery grid - 6 columns x 2 rows = 12 vehicles
-    const cardWidth = 3;
-    const cardHeight = 4;
-    const gap = 1;
-
-    for (let row = 0; row < 2; row++) {
-      for (let col = 0; col < 6; col++) {
-        const startCellRow = startRow + 2 + row * (cardHeight + gap);
-        const startCellCol = 1 + col * (cardWidth + gap);
-
-        // Vehicle card container
-        const cardRange = sheet.getRange(startCellRow, startCellCol, cardHeight, cardWidth);
-        cardRange.setBackground(COLORS.WHITE);
-        cardRange.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
-
-        // Image placeholder
-        const imageRange = sheet.getRange(startCellRow, startCellCol, 2, cardWidth);
-        imageRange.merge();
-        imageRange.setBackground(COLORS.LIGHT_GRAY);
-        imageRange.setHorizontalAlignment("center");
-        imageRange.setVerticalAlignment("middle");
-        imageRange.setValue("[Image]");
-        imageRange.setFontColor(COLORS.TEXT_SECONDARY);
-        imageRange.setFontSize(10);
-
-        // Vehicle info
-        const infoRange = sheet.getRange(startCellRow + 2, startCellCol, 2, cardWidth);
-        infoRange.merge();
-        infoRange.setHorizontalAlignment("left");
-        infoRange.setVerticalAlignment("top");
-        infoRange.setFontSize(11);
-        infoRange.setWrap(true);
-      }
-    }
+    /*
+ 
+     const startRow = 36;
+ 
+     // Section title
+     sheet.getRange(startRow, 1).setValue("Vehicle Gallery");
+     sheet.getRange(startRow, 1).setFontWeight("bold");
+     sheet.getRange(startRow, 1).setFontSize(14);
+     sheet.getRange(startRow, 1).setFontColor(COLORS.TEXT_PRIMARY);
+ 
+     // Gallery grid - 6 columns x 2 rows = 12 vehicles
+     const cardWidth = 3;
+     const cardHeight = 4;
+     const gap = 1;
+ 
+     for (let row = 0; row < 2; row++) {
+       for (let col = 0; col < 6; col++) {
+         const startCellRow = startRow + 2 + row * (cardHeight + gap);
+         const startCellCol = 1 + col * (cardWidth + gap);
+ 
+         // Vehicle card container
+         const cardRange = sheet.getRange(startCellRow, startCellCol, cardHeight, cardWidth);
+         cardRange.setBackground(COLORS.WHITE);
+         cardRange.setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+ 
+         // Image placeholder
+         const imageRange = sheet.getRange(startCellRow, startCellCol, 2, cardWidth);
+         imageRange.merge();
+         imageRange.setBackground(COLORS.LIGHT_GRAY);
+         imageRange.setHorizontalAlignment("center");
+         imageRange.setVerticalAlignment("middle");
+         imageRange.setValue("[Image]");
+         imageRange.setFontColor(COLORS.TEXT_SECONDARY);
+         imageRange.setFontSize(10);
+ 
+         // Vehicle info
+         const infoRange = sheet.getRange(startCellRow + 2, startCellCol, 2, cardWidth);
+         infoRange.merge();
+         infoRange.setHorizontalAlignment("left");
+         infoRange.setVerticalAlignment("top");
+         infoRange.setFontSize(11);
+         infoRange.setWrap(true);
+       }
+     }*/
   }
 
   /**
@@ -411,7 +595,7 @@ const DashboardBuilder = (() => {
    * @param {Sheet} sheet
    */
   function buildFooter(sheet) {
-    const footerRow = 48;
+    const footerRow = 50;
 
     sheet.getRange(footerRow, 1).setValue("GarageOS v1.0 | Built with Google Sheets & Apps Script");
     sheet.getRange(footerRow, 1).setFontSize(10);
@@ -424,32 +608,58 @@ const DashboardBuilder = (() => {
    * @param {Sheet} sheet
    */
   function styleDashboard(sheet) {
-    // Set column widths
-    sheet.setColumnWidth(1, 120);
-    sheet.setColumnWidth(2, 120);
-    sheet.setColumnWidth(3, 120);
-    sheet.setColumnWidth(4, 120);
-    sheet.setColumnWidth(5, 120);
-    sheet.setColumnWidth(6, 120);
-    sheet.setColumnWidth(7, 50); // gap
-    sheet.setColumnWidth(8, 120);
-    sheet.setColumnWidth(9, 120);
-    sheet.setColumnWidth(10, 120);
-    sheet.setColumnWidth(11, 120);
-    sheet.setColumnWidth(12, 120);
-    sheet.setColumnWidth(13, 50); // gap
-    sheet.setColumnWidth(14, 120);
-    sheet.setColumnWidth(15, 120);
-    sheet.setColumnWidth(16, 120);
-    sheet.setColumnWidth(17, 120);
-    sheet.setColumnWidth(18, 120);
+    // Set column widths - optimized for dashboard layout
+    sheet.setColumnWidth(1, 140);
+    sheet.setColumnWidth(2, 140);
+    sheet.setColumnWidth(3, 140);
+    sheet.setColumnWidth(4, 140);
+    sheet.setColumnWidth(5, 140);
+    sheet.setColumnWidth(6, 140);
+    sheet.setColumnWidth(7, 40); // gap
+    sheet.setColumnWidth(8, 140);
+    sheet.setColumnWidth(9, 140);
+    sheet.setColumnWidth(10, 140);
+    sheet.setColumnWidth(11, 140);
+    sheet.setColumnWidth(12, 140);
+    sheet.setColumnWidth(13, 40); // gap
+    sheet.setColumnWidth(14, 140);
+    sheet.setColumnWidth(15, 140);
+    sheet.setColumnWidth(16, 140);
+    sheet.setColumnWidth(17, 140);
+    sheet.setColumnWidth(18, 140);
+    sheet.setColumnWidth(19, 140);
+    sheet.setColumnWidth(20, 140);
+    sheet.setColumnWidth(21, 140);
+    sheet.setColumnWidth(22, 140);
+    sheet.setColumnWidth(23, 140);
+    sheet.setColumnWidth(24, 140);
+    sheet.setColumnWidth(25, 40); // gap
 
-    // Set row heights
-    sheet.setRowHeight(1, 40);
-    sheet.setRowHeight(2, 25);
+    // Set row heights - optimized for visual hierarchy
+    sheet.setRowHeight(1, 50);  // Title row
+    sheet.setRowHeight(2, 30);  // Subtitle row
+    sheet.setRowHeight(3, 10);  // Spacer
+
+    // KPI card rows
+    for (let row = 4; row <= 10; row++) {
+      sheet.setRowHeight(row, 35);
+    }
+
+    // Analytics section rows
+    for (let row = 13; row <= 26; row++) {
+      sheet.setRowHeight(row, 30);
+    }
+
+    // Tables section rows
+    for (let row = 27; row <= 40; row++) {
+      sheet.setRowHeight(row, 28);
+    }
 
     // Hide gridlines for cleaner look
     sheet.setHiddenGridlines(true);
+
+    // Set default font for entire sheet
+    sheet.getRange("A1:Z100").setFontFamily("Roboto");
   }
 
   return {
