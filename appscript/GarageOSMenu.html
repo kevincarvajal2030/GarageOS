@@ -51,7 +51,7 @@
     /* Header */
     .sidebar-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       padding: 0 8px 20px 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -107,13 +107,19 @@
     }
 
     .nav-item:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: #1D4ED8;
     }
 
     .nav-item .material-icons {
       font-size: 22px;
-      color: #D1D5DB;
+      color: #9CA3AF;
       flex-shrink: 0;
+    }
+
+
+    .nav-item:hover .material-icons,
+    .nav-item.active .material-icons {
+      color: #FFFFFF;
     }
 
     .nav-item span {
@@ -125,13 +131,6 @@
     /* Active State */
     .nav-item.active {
       background: #2563EB;
-    }
-
-    .nav-item.active .material-icons {
-      color: #FFFFFF;
-    }
-
-    .nav-item.active span {
       color: #FFFFFF;
     }
 
@@ -143,7 +142,7 @@
       transform: translateY(-50%);
       width: 4px;
       height: 60%;
-      background: #3B82F6;
+      background: #60A5FA;
       border-radius: 0 2px 2px 0;
     }
 
@@ -377,7 +376,10 @@
 
     <!-- Header -->
     <div class="sidebar-header">
-      <span class="sidebar-logo">GarageOS</span>
+      <div class="sidebar-logo-container">
+        <span class="sidebar-logo">GarageOS</span>
+        <div class="sidebar-subtitle">Auto Repair Management</div>
+      </div>
       <button class="close-btn" onclick="closeSidebar()">
         <span class="material-icons">close</span>
       </button>
@@ -485,7 +487,7 @@
         </div>
         <div class="info-row">
           <div class="info-label">Author</div>
-          <div class="info-value">GarageOS Team</div>
+          <div class="info-value">Kevin Carvajal</div>
         </div>
       </div>
     </div>

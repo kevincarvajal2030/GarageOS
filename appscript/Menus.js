@@ -28,8 +28,8 @@ function createGarageOSMenu() {
     .createMenu("☰ GarageOS")
 
     .addItem(
-      "Toggle Navigation",
-      "toggleGarageOSSidebar"
+      "Open Navigation",
+      "openGarageOSSidebar"
     )
 
     .addToUi();
@@ -38,20 +38,8 @@ function createGarageOSMenu() {
 
 
 /******************************************************************************
- * SIDEBAR TOGGLE
+ * SIDEBAR MANAGEMENT
  ******************************************************************************/
-
-let sidebarIsOpen = false;
-
-function toggleGarageOSSidebar() {
-
-  if (sidebarIsOpen) {
-    closeGarageOSSidebar();
-  } else {
-    openGarageOSSidebar();
-  }
-
-}
 
 function openGarageOSSidebar() {
 
@@ -60,13 +48,11 @@ function openGarageOSSidebar() {
     .setTitle("GarageOS Menu");
 
   SpreadsheetApp.getUi().showSidebar(html);
-  sidebarIsOpen = true;
 
 }
 
 function closeGarageOSSidebar() {
 
   SpreadsheetApp.getUi().closeSidebar();
-  sidebarIsOpen = false;
 
 }
