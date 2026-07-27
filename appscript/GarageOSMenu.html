@@ -588,11 +588,11 @@
 
       if (!sheetName) return;
 
-      // Special handling for Dashboard - open sidebar instead of just switching sheets
+      // Special handling for Dashboard - rebuild and activate the sheet
       if (module === 'dashboard') {
         google.script.run
           .withSuccessHandler(function() {
-            // Also activate the dashboard sheet
+            // Activate the dashboard sheet
             google.script.run.activateSheetByName(sheetName);
           })
           .withFailureHandler(function(err) {
