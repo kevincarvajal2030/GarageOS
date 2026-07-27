@@ -6,8 +6,7 @@
 **/*.gs.bak
 **/*.html.bak
 
-# Excel files (build artifacts)
-*.xlsx
+
 
 # Logs and temp files
 *.log
