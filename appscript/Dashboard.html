@@ -1,0 +1,1465 @@
+
+<!-- Dashboard.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* =========================================
+       RESET & BASE
+       ========================================= */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #F9FAFB;
+      color: #1F2937;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #F3F4F6;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9CA3AF;
+    }
+
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .dashboard-header {
+      margin-bottom: 32px;
+    }
+
+    .dashboard-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.02em;
+    }
+
+    .dashboard-subtitle {
+      font-size: 14px;
+      color: #6B7280;
+      margin-top: 4px;
+    }
+
+    /* =========================================
+       KPI CARDS GRID
+       ========================================= */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kpi-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #F3F4F6;
+      cursor: default;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .kpi-icon-wrapper {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kpi-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-label {
+      font-size: 13px;
+      color: #6B7280;
+      font-weight: 500;
+    }
+
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .kpi-trend.positive {
+      color: #059669;
+    }
+
+    .kpi-trend.negative {
+      color: #DC2626;
+    }
+
+    .kpi-trend.neutral {
+      color: #6B7280;
+    }
+
+    /* KPI Card Variants */
+    .kpi-blue {
+      background: #EFF6FF;
+    }
+    .kpi-blue .kpi-icon-wrapper {
+      background: #DBEAFE;
+      color: #3B82F6;
+    }
+
+    .kpi-green {
+      background: #ECFDF5;
+    }
+    .kpi-green .kpi-icon-wrapper {
+      background: #D1FAE5;
+      color: #22C55E;
+    }
+
+    .kpi-orange {
+      background: #FFF7ED;
+    }
+    .kpi-orange .kpi-icon-wrapper {
+      background: #FFEDD5;
+      color: #F59E0B;
+    }
+
+    .kpi-purple {
+      background: #F5F3FF;
+    }
+    .kpi-purple .kpi-icon-wrapper {
+      background: #EDE9FE;
+      color: #8B5CF6;
+    }
+
+    .kpi-emerald {
+      background: #ECFDF5;
+    }
+    .kpi-emerald .kpi-icon-wrapper {
+      background: #D1FAE5;
+      color: #16A34A;
+    }
+
+    .kpi-red {
+      background: #FEF2F2;
+    }
+    .kpi-red .kpi-icon-wrapper {
+      background: #FEE2E2;
+      color: #EF4444;
+    }
+
+    /* =========================================
+       CHARTS SECTION
+       ========================================= */
+    .charts-section {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1200px) {
+      .charts-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #F3F4F6;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    /* =========================================
+       TABLES SECTION
+       ========================================= */
+    .tables-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1000px) {
+      .tables-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .table-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #F3F4F6;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .table-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .data-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #374151;
+      border-bottom: 1px solid #F9FAFB;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr {
+      transition: background-color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: #F9FAFB;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .status-in-progress {
+      background: #DBEAFE;
+      color: #1E40AF;
+    }
+
+    .status-waiting-parts {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    .status-waiting-approval {
+      background: #EDE9FE;
+      color: #5B21B6;
+    }
+
+    .status-pending {
+      background: #FFEDD5;
+      color: #9A3412;
+    }
+
+    .status-on-hold {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status-completed {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status-cancelled {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .status-paid {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status-refunded {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    /* =========================================
+       VEHICLE GALLERY
+       ========================================= */
+    .gallery-section {
+      margin-bottom: 32px;
+    }
+
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .gallery-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    .vehicle-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .vehicle-card {
+      width: 100%;
+      height: 120px;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      background: linear-gradient(135deg, #E5E7EB, #F3F4F6);
+    }
+
+    .vehicle-card:hover {
+      transform: scale(1.05) translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .vehicle-card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: all 0.3s ease;
+    }
+
+    .vehicle-card:hover .vehicle-card-image {
+      filter: brightness(1.08) contrast(1.02);
+    }
+
+    .vehicle-card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 12px;
+    }
+
+    .vehicle-card-title {
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .vehicle-card-year {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .vehicle-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #E5E7EB, #F3F4F6);
+      color: #9CA3AF;
+      font-size: 12px;
+    }
+
+    /* =========================================
+       SKELETON LOADERS
+       ========================================= */
+    .skeleton {
+      background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      height: 140px;
+      border-radius: 16px;
+    }
+
+    .skeleton-chart {
+      height: 280px;
+      border-radius: 16px;
+    }
+
+    .skeleton-row {
+      height: 50px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-vehicle {
+      width: 180px;
+      height: 120px;
+      border-radius: 16px;
+    }
+
+    /* =========================================
+       EMPTY STATES
+       ========================================= */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+      color: #9CA3AF;
+    }
+
+    .empty-state-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      color: #6B7280;
+    }
+
+    /* =========================================
+       ANIMATIONS
+       ========================================= */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .count-animation {
+      animation: countUp 0.6s ease forwards;
+    }
+
+    /* =========================================
+       REFRESH INDICATOR
+       ========================================= */
+    .refresh-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    .refresh-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22C55E;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* =========================================
+       TOP CUSTOMERS SECTION
+       ========================================= */
+    .top-customers-section {
+      margin-bottom: 32px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="dashboard-container" id="dashboard">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">Overview of your garage operations</p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state">
+      <div class="kpi-grid">
+        <div class="kpi-card skeleton skeleton-card"></div>
+        <div class="kpi-card skeleton skeleton-card"></div>
+        <div class="kpi-card skeleton skeleton-card"></div>
+        <div class="kpi-card skeleton skeleton-card"></div>
+        <div class="kpi-card skeleton skeleton-card"></div>
+        <div class="kpi-card skeleton skeleton-card"></div>
+      </div>
+
+      <div class="charts-section">
+        <div class="chart-card skeleton skeleton-chart"></div>
+        <div class="chart-card skeleton skeleton-chart"></div>
+        <div class="chart-card skeleton skeleton-chart"></div>
+      </div>
+
+      <div class="tables-section">
+        <div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+        </div>
+        <div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+        </div>
+      </div>
+
+      <div class="gallery-section">
+        <div style="display: flex; gap: 16px;">
+          <div class="skeleton skeleton-vehicle"></div>
+          <div class="skeleton skeleton-vehicle"></div>
+          <div class="skeleton skeleton-vehicle"></div>
+          <div class="skeleton skeleton-vehicle"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content (hidden initially) -->
+    <div id="dashboard-content" style="display: none;">
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+
+        <!-- Total Customers -->
+        <div class="kpi-card kpi-blue fade-in" style="animation-delay: 0ms;">
+          <div class="kpi-icon-wrapper">
+            <svg class="kpi-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          <div class="kpi-value count-animation" id="kpi-customers">0</div>
+          <div class="kpi-label">Total Customers</div>
+          <div class="kpi-trend neutral" id="trend-customers">
+            <span>--</span>
+          </div>
+        </div>
+
+        <!-- Total Vehicles -->
+        <div class="kpi-card kpi-green fade-in" style="animation-delay: 100ms;">
+          <div class="kpi-icon-wrapper">
+            <svg class="kpi-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+            </svg>
+          </div>
+          <div class="kpi-value count-animation" id="kpi-vehicles">0</div>
+          <div class="kpi-label">Total Vehicles</div>
+          <div class="kpi-trend neutral" id="trend-vehicles">
+            <span>--</span>
+          </div>
+        </div>
+
+        <!-- Open Work Orders -->
+        <div class="kpi-card kpi-orange fade-in" style="animation-delay: 200ms;">
+          <div class="kpi-icon-wrapper">
+            <svg class="kpi-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+            </svg>
+          </div>
+          <div class="kpi-value count-animation" id="kpi-open-orders">0</div>
+          <div class="kpi-label">Open Work Orders</div>
+          <div class="kpi-trend neutral" id="trend-open-orders">
+            <span>--</span>
+          </div>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="kpi-card kpi-purple fade-in" style="animation-delay: 300ms;">
+          <div class="kpi-icon-wrapper">
+            <svg class="kpi-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </div>
+          <div class="kpi-value count-animation" id="kpi-completed-orders">0</div>
+          <div class="kpi-label">Completed Orders</div>
+          <div class="kpi-trend neutral" id="trend-completed-orders">
+            <span>--</span>
+          </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="kpi-card kpi-emerald fade-in" style="animation-delay: 400ms;">
+          <div class="kpi-icon-wrapper">
+            <svg class="kpi-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.15c-1.8.56-3.25 1.79-3.25 3.6 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.58 3.5-1.93 3.5-3.77 0-2.82-2.34-3.72-4.94-4.18z"/>
+            </svg>
+          </div>
+          <div class="kpi-value count-animation" id="kpi-revenue">$0</div>
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-trend neutral" id="trend-revenue">
+            <span>--</span>
+          </div>
+        </div>
+
+        <!-- Outstanding Balance -->
+        <div class="kpi-card kpi-red fade-in" style="animation-delay: 500ms;">
+          <div class="kpi-icon-wrapper">
+            <svg class="kpi-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.15c-1.8.56-3.25 1.79-3.25 3.6 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.58 3.5-1.93 3.5-3.77 0-2.82-2.34-3.72-4.94-4.18z"/>
+            </svg>
+          </div>
+          <div class="kpi-value count-animation" id="kpi-outstanding">$0</div>
+          <div class="kpi-label">Outstanding Balance</div>
+          <div class="kpi-trend neutral" id="trend-outstanding">
+            <span>--</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+
+        <!-- Revenue Chart -->
+        <div class="chart-card fade-in" style="animation-delay: 600ms;">
+          <div class="chart-header">
+            <h3 class="chart-title">Revenue Trend</h3>
+            <div class="refresh-indicator">
+              <span class="refresh-dot"></span>
+              <span>Auto-refresh 60s</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Work Order Status Chart -->
+        <div class="chart-card fade-in" style="animation-delay: 700ms;">
+          <div class="chart-header">
+            <h3 class="chart-title">Work Order Status</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="workOrderStatusChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Vehicle Make Chart -->
+        <div class="chart-card fade-in" style="animation-delay: 800ms;">
+          <div class="chart-header">
+            <h3 class="chart-title">Vehicle Makes</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="vehicleMakeChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tables Section -->
+      <div class="tables-section">
+
+        <!-- Recent Work Orders -->
+        <div class="table-card fade-in" style="animation-delay: 900ms;">
+          <div class="table-header">
+            <h3 class="table-title">Recent Work Orders</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>WO ID</th>
+                <th>Customer</th>
+                <th>Vehicle</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Open Date</th>
+              </tr>
+            </thead>
+            <tbody id="recent-orders-body">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+          <div id="orders-empty" class="empty-state" style="display: none;">
+            <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+            <p class="empty-state-text">No work orders yet</p>
+          </div>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="table-card fade-in" style="animation-delay: 1000ms;">
+          <div class="table-header">
+            <h3 class="table-title">Recent Payments</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-payments-body">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+          <div id="payments-empty" class="empty-state" style="display: none;">
+            <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+            <p class="empty-state-text">No payments yet</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Top Customers Section -->
+      <div class="table-card top-customers-section fade-in" style="animation-delay: 1100ms;">
+        <div class="table-header">
+          <h3 class="table-title">Top Customers</h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Total Spent</th>
+              <th>Orders</th>
+            </tr>
+          </thead>
+          <tbody id="top-customers-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+        <div id="customers-empty" class="empty-state" style="display: none;">
+          <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <p class="empty-state-text">No customer data yet</p>
+        </div>
+      </div>
+
+      <!-- Vehicle Gallery Section -->
+      <div class="gallery-section fade-in" style="animation-delay: 1200ms;">
+        <div class="gallery-header">
+          <h3 class="gallery-title">Vehicle Gallery</h3>
+        </div>
+        <div class="vehicle-gallery" id="vehicle-gallery">
+          <!-- Populated by JS -->
+        </div>
+        <div id="gallery-empty" class="empty-state" style="display: none;">
+          <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+          </svg>
+          <p class="empty-state-text">No vehicles in gallery</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // =========================================
+    // GLOBAL STATE
+    // =========================================
+    let revenueChartInstance = null;
+    let workOrderStatusChartInstance = null;
+    let vehicleMakeChartInstance = null;
+    let refreshInterval = null;
+
+    // =========================================
+    // INITIALIZATION
+    // =========================================
+    window.onload = function() {
+      loadDashboard();
+      startAutoRefresh();
+    };
+
+    function startAutoRefresh() {
+      if (refreshInterval) clearInterval(refreshInterval);
+
+      refreshInterval = setInterval(function() {
+        refreshDashboardPartial();
+      }, 60000); // 60 seconds
+    }
+
+    // =========================================
+    // DATA LOADING
+    // =========================================
+    function loadDashboard() {
+      showLoading();
+
+      google.script.run
+        .withSuccessHandler(renderDashboard)
+        .withFailureHandler(handleError)
+        .getDashboardData();
+    }
+
+    function refreshDashboardPartial() {
+      google.script.run
+        .withSuccessHandler(updateDashboard)
+        .withFailureHandler(handleError)
+        .refreshDashboard();
+    }
+
+    function showLoading() {
+      document.getElementById('loading-state').style.display = 'block';
+      document.getElementById('dashboard-content').style.display = 'none';
+    }
+
+    function hideLoading() {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('dashboard-content').style.display = 'block';
+    }
+
+    function handleError(error) {
+      console.error('Dashboard error:', error);
+      hideLoading();
+    }
+
+    // =========================================
+    // RENDERING
+    // =========================================
+    function renderDashboard(data) {
+      hideLoading();
+
+      // Render KPI Cards
+      renderKpiCards(data);
+
+      // Render Charts
+      renderCharts(data.charts);
+
+      // Render Tables
+      renderTables(data);
+
+      // Render Vehicle Gallery
+      renderVehicleGallery(data.vehicleGallery);
+    }
+
+    function updateDashboard(data) {
+      // Update KPI Cards with animation
+      updateKpiValue('kpi-customers', data.customers.total);
+      updateKpiValue('kpi-vehicles', data.vehicles.total);
+      updateKpiValue('kpi-open-orders', data.workOrders.open);
+      updateKpiValue('kpi-completed-orders', data.workOrders.completed);
+      updateKpiValue('kpi-revenue', formatCurrency(data.revenue.total), true);
+      updateKpiValue('kpi-outstanding', formatCurrency(data.outstanding?.total || 0), true);
+
+      // Update Charts
+      updateCharts(data.charts);
+
+      // Update Tables
+      renderRecentOrders(data.recentOrders);
+      renderRecentPayments(data.recentPayments);
+      renderTopCustomers(data.topCustomers);
+
+      // Update Gallery (only if changed)
+      renderVehicleGallery(data.vehicleGallery);
+    }
+
+    // =========================================
+    // KPI CARDS
+    // =========================================
+    function renderKpiCards(data) {
+      setKpiValue('kpi-customers', data.customers.total);
+      setKpiValue('kpi-vehicles', data.vehicles.total);
+      setKpiValue('kpi-open-orders', data.workOrders.open);
+      setKpiValue('kpi-completed-orders', data.workOrders.completed);
+      setKpiValue('kpi-revenue', formatCurrency(data.revenue.total));
+      setKpiValue('kpi-outstanding', formatCurrency(data.payments?.outstandingBalance || 0));
+    }
+
+    function setKpiValue(elementId, value) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = value;
+        element.classList.remove('count-animation');
+        void element.offsetWidth; // Trigger reflow
+        element.classList.add('count-animation');
+      }
+    }
+
+    function updateKpiValue(elementId, value, isCurrency = false) {
+      const element = document.getElementById(elementId);
+      if (element && element.textContent !== String(value)) {
+        element.textContent = value;
+        element.classList.remove('count-animation');
+        void element.offsetWidth;
+        element.classList.add('count-animation');
+      }
+    }
+
+    // =========================================
+    // CHARTS
+    // =========================================
+    function renderCharts(charts) {
+      renderRevenueChart(charts.revenue);
+      renderWorkOrderStatusChart(charts.workOrderStatus);
+      renderVehicleMakeChart(charts.vehicleMake);
+    }
+
+    function updateCharts(charts) {
+      updateRevenueChart(charts.revenue);
+      updateWorkOrderStatusChart(charts.workOrderStatus);
+      updateVehicleMakeChart(charts.vehicleMake);
+    }
+
+    function renderRevenueChart(data) {
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+
+      if (revenueChartInstance) {
+        revenueChartInstance.destroy();
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+      gradient.addColorStop(0, 'rgba(37, 99, 235, 0.12)');
+      gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+      revenueChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels || [],
+          datasets: [{
+            label: 'Revenue',
+            data: data.values || [],
+            borderColor: '#2563EB',
+            backgroundColor: gradient,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#2563EB',
+            pointHoverBorderColor: '#fff',
+            pointHoverBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1F2937',
+              bodyColor: '#6B7280',
+              borderColor: '#E5E7EB',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  return '$' + context.parsed.y.toLocaleString();
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#9CA3AF', font: { size: 11 } }
+            },
+            y: {
+              grid: { color: '#F3F4F6' },
+              ticks: {
+                color: '#9CA3AF',
+                font: { size: 11 },
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'nearest'
+          }
+        }
+      });
+    }
+
+    function updateRevenueChart(data) {
+      if (!revenueChartInstance) return;
+
+      revenueChartInstance.data.labels = data.labels || [];
+      revenueChartInstance.data.datasets[0].data = data.values || [];
+      revenueChartInstance.update('none');
+    }
+
+    function renderWorkOrderStatusChart(data) {
+      const ctx = document.getElementById('workOrderStatusChart').getContext('2d');
+
+      if (workOrderStatusChartInstance) {
+        workOrderStatusChartInstance.destroy();
+      }
+
+      const colors = data.colors || [
+        '#3B82F6', '#F59E0B', '#8B5CF6', '#F97316', '#22C55E', '#10B981', '#EF4444'
+      ];
+
+      workOrderStatusChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.labels || [],
+          datasets: [{
+            data: data.values || [],
+            backgroundColor: colors,
+            borderWidth: 0,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 16,
+                font: { size: 11 },
+                color: '#6B7280'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1F2937',
+              bodyColor: '#6B7280',
+              borderColor: '#E5E7EB',
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.parsed;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateWorkOrderStatusChart(data) {
+      if (!workOrderStatusChartInstance) return;
+
+      workOrderStatusChartInstance.data.labels = data.labels || [];
+      workOrderStatusChartInstance.data.datasets[0].data = data.values || [];
+      workOrderStatusChartInstance.data.datasets[0].backgroundColor = data.colors || workOrderStatusChartInstance.data.datasets[0].backgroundColor;
+      workOrderStatusChartInstance.update('none');
+    }
+
+    function renderVehicleMakeChart(data) {
+      const ctx = document.getElementById('vehicleMakeChart').getContext('2d');
+
+      if (vehicleMakeChartInstance) {
+        vehicleMakeChartInstance.destroy();
+      }
+
+      const colors = {
+        'Toyota': '#3B82F6',
+        'Honda': '#22C55E',
+        'Ford': '#FBBF24',
+        'Chevrolet': '#A855F7',
+        'Nissan': '#F97316',
+        'Others': '#14B8A6'
+      };
+
+      vehicleMakeChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.labels || [],
+          datasets: [{
+            data: data.values || [],
+            backgroundColor: data.labels.map(l => colors[l] || '#9CA3AF'),
+            borderWidth: 0,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 16,
+                font: { size: 11 },
+                color: '#6B7280'
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#1F2937',
+              bodyColor: '#6B7280',
+              borderColor: '#E5E7EB',
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.parsed;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateVehicleMakeChart(data) {
+      if (!vehicleMakeChartInstance) return;
+
+      const colors = {
+        'Toyota': '#3B82F6',
+        'Honda': '#22C55E',
+        'Ford': '#FBBF24',
+        'Chevrolet': '#A855F7',
+        'Nissan': '#F97316',
+        'Others': '#14B8A6'
+      };
+
+      vehicleMakeChartInstance.data.labels = data.labels || [];
+      vehicleMakeChartInstance.data.datasets[0].data = data.values || [];
+      vehicleMakeChartInstance.data.datasets[0].backgroundColor = data.labels.map(l => colors[l] || '#9CA3AF');
+      vehicleMakeChartInstance.update('none');
+    }
+
+    // =========================================
+    // TABLES
+    // =========================================
+    function renderTables(data) {
+      renderRecentOrders(data.recentOrders);
+      renderRecentPayments(data.recentPayments);
+      renderTopCustomers(data.topCustomers);
+    }
+
+    function renderRecentOrders(orders) {
+      const tbody = document.getElementById('recent-orders-body');
+      const emptyState = document.getElementById('orders-empty');
+
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'flex';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      tbody.innerHTML = orders.map(order => `
+        <tr onclick="openVehicleViewer('${order.vehicle}')">
+          <td style="font-weight: 600; color: #1F2937;">${escapeHtml(order.woId)}</td>
+          <td>${escapeHtml(order.customer)}</td>
+          <td>${escapeHtml(order.vehicle)}</td>
+          <td>${renderStatusBadge(order.status)}</td>
+          <td style="font-weight: 600;">${formatCurrency(order.total)}</td>
+          <td style="color: #6B7280;">${order.openDate}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderRecentPayments(payments) {
+      const tbody = document.getElementById('recent-payments-body');
+      const emptyState = document.getElementById('payments-empty');
+
+      if (!payments || payments.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'flex';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      tbody.innerHTML = payments.map(payment => `
+        <tr>
+          <td style="font-weight: 600; color: #1F2937;">${escapeHtml(payment.paymentId)}</td>
+          <td>${escapeHtml(payment.customer)}</td>
+          <td style="font-weight: 600;">${formatCurrency(payment.amount)}</td>
+          <td style="color: #6B7280;">${escapeHtml(payment.method)}</td>
+          <td style="color: #6B7280;">${payment.date}</td>
+          <td>${renderPaymentStatusBadge(payment.status)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderTopCustomers(customers) {
+      const tbody = document.getElementById('top-customers-body');
+      const emptyState = document.getElementById('customers-empty');
+
+      if (!customers || customers.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'flex';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      tbody.innerHTML = customers.map((customer, index) => `
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: ${getRankColor(index)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">${index + 1}</div>
+              <span style="font-weight: 500;">${escapeHtml(customer.customer)}</span>
+            </div>
+          </td>
+          <td style="font-weight: 600; color: #059669;">${formatCurrency(customer.totalSpent)}</td>
+          <td style="color: #6B7280;">${customer.orders}</td>
+        </tr>
+      `).join('');
+    }
+
+    function getRankColor(index) {
+      if (index === 0) return '#F59E0B';
+      if (index === 1) return '#9CA3AF';
+      if (index === 2) return '#B45309';
+      return '#E5E7EB';
+    }
+
+    // =========================================
+    // STATUS BADGES
+    // =========================================
+    function renderStatusBadge(status) {
+      const statusLower = (status || '').toLowerCase();
+      let className = 'status-pending';
+
+      if (statusLower.includes('in progress')) className = 'status-in-progress';
+      else if (statusLower.includes('waiting parts')) className = 'status-waiting-parts';
+      else if (statusLower.includes('waiting approval')) className = 'status-waiting-approval';
+      else if (statusLower.includes('on hold')) className = 'status-on-hold';
+      else if (statusLower.includes('completed')) className = 'status-completed';
+      else if (statusLower.includes('cancelled')) className = 'status-cancelled';
+
+      return `<span class="status-badge ${className}">${escapeHtml(status)}</span>`;
+    }
+
+    function renderPaymentStatusBadge(status) {
+      const statusLower = (status || '').toLowerCase();
+      let className = 'status-pending';
+
+      if (statusLower === 'paid') className = 'status-paid';
+      else if (statusLower === 'refunded') className = 'status-refunded';
+
+      return `<span class="status-badge ${className}">${escapeHtml(status)}</span>`;
+    }
+
+    // =========================================
+    // VEHICLE GALLERY (LIKE VEHICLE VIEWER)
+    // =========================================
+    function renderVehicleGallery(vehicles) {
+      const gallery = document.getElementById('vehicle-gallery');
+      const emptyState = document.getElementById('gallery-empty');
+
+      if (!vehicles || vehicles.length === 0) {
+        gallery.innerHTML = '';
+        emptyState.style.display = 'flex';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      gallery.innerHTML = vehicles.map(vehicle => `
+        <div class="vehicle-card" onclick="openVehicleViewerById('${escapeHtml(vehicle.vehicleId)}')">
+          ${vehicle.imageUrl
+            ? `<img class="vehicle-card-image" src="${vehicle.imageUrl}" alt="${escapeHtml(vehicle.displayName)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+            : ''}
+          <div class="vehicle-placeholder" style="${vehicle.imageUrl ? 'display:none;' : ''}">
+            No Image
+          </div>
+          <div class="vehicle-card-overlay">
+            <div class="vehicle-card-title">${escapeHtml(vehicle.displayName)}</div>
+            <div class="vehicle-card-year">${escapeHtml(vehicle.year)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // =========================================
+    // VEHICLE VIEWER INTEGRATION
+    // =========================================
+    function openVehicleViewer(vehicleName) {
+      // Reuse existing Vehicle Viewer implementation
+      google.script.run
+        .withSuccessHandler(function() {
+          // Sidebar opened successfully
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error opening Vehicle Viewer:', error);
+        })
+        .openVehicleViewerSidebar();
+    }
+
+    function openVehicleViewerById(vehicleId) {
+      // First find the vehicle in the sheet, then open viewer
+      google.script.run
+        .withSuccessHandler(function() {
+          google.script.run.openVehicleViewerSidebar();
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error finding vehicle:', error);
+        })
+        .findVehicleById_(vehicleId);
+    }
+
+    // =========================================
+    // UTILITIES
+    // =========================================
+    function formatCurrency(value) {
+      if (value === undefined || value === null) return '$0';
+      return '$' + Number(value).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Handle page unload
+    window.onbeforeunload = function() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
+  </script>
+
+</body>
+
+</html>

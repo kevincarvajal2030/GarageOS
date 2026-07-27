@@ -1,3 +1,9 @@
+node_modules/
+.env
+.env.*
+.DS_Store
+Thumbs.db
+
 .clasp.json
 .clasprc.json
 node_modules/
@@ -5,3 +11,54 @@ node_modules/
 .env.*
 .DS_Store
 Thumbs.db
+
+
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+dist/
+build/
+target/
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+.julia/
+zig*/
+.deps/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Cache directories
+.mypy_cache/
+.pytest_cache/
+.gradle/
+```
