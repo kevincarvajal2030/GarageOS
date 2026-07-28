@@ -1,351 +1,98 @@
-\# GarageOS
-
-
-
-\*\*GarageOS\*\* is a modular automotive workshop management system built with \*\*Google Sheets\*\* and \*\*Google Apps Script\*\*.
-
-
-
-The project is designed to help automotive repair shops manage their daily operations through a cloud-based platform that requires no traditional database or server infrastructure.
-
-
-
-GarageOS focuses on simplicity, automation, scalability, and maintainability while leveraging the Google Workspace ecosystem.
-
-
-
-\---
-
-
-
-\# Project Status
-
-
-
-\*\*Current Version\*\*
-
-
-
-v0.1.0
-
-
-
-Status:
-
-
-
-🚧 Under Active Development
-
-
-
-\---
-
-
-
-\# Main Features
-
-
-
-\- Customer Management
-
-\- Vehicle Management
-
-\- Work Order Management
-
-\- Inventory Management
-
-\- Payment Tracking
-
-\- Dashboard \& KPIs
-
-\- Workflow Automation
-
-\- Google Apps Script Backend
-
-\- Cloud-based Google Sheets Database
-
-
-
-\---
-
-
-
-\# Technology Stack
-
-
-
-| Technology | Purpose |
-
-|------------|---------|
-
-| Google Sheets | Database \& User Interface |
-
-| Google Apps Script | Backend Logic |
-
-| Git | Version Control |
-
-| GitHub | Source Control |
-
-| clasp | Apps Script Synchronization |
-
-
-
-\---
-
-
-
-\# Project Architecture
-
-
-
-```
-
-Google Sheets
-
-&#x20;       │
-
-&#x20;       ▼
-
-Google Apps Script
-
-&#x20;       │
-
-&#x20;       ▼
-
-Business Logic Modules
-
-&#x20;       │
-
-&#x20;       ▼
-
-Database Layer
-
-&#x20;       │
-
-&#x20;       ▼
-
-User Interface
-
-```
-
-
-
-\---
-
-
-
-\# Repository Structure
-
-
-
-```
-
-GarageOS/
-
-
-
-appscript/
-
-docs/
-
-assets/
-
-screenshots/
-
-videos/
-
-tests/
-
-
-
-README.md
-
-LICENSE
-
-CONTRIBUTING.md
-
-```
-
-
-
-\---
-
-
-
-\# Current Modules
-
-
-
-\- Config
-
-\- Database
-
-\- Utilities
-
-\- Customers
-
-\- Vehicles
-
-\- Work Orders
-
-\- Inventory
-
-\- Payments
-
-\- Dashboard
-
-\- UI
-
-\- Validation
-
-\- Developer Center
-
-
-
-\---
-
-
-
-\# Roadmap
-
-
-
-\### Version 0.1
-
-
-
-\- Project Architecture
-
-\- GitHub Integration
-
-\- Customer Module
-
-\- Vehicle Module
-
-\- Dashboard Foundation
-
-
-
-\### Future Versions
-
-
-
-\- Authentication
-
-\- User Roles
-
-\- Reporting System
-
-\- PDF Generation
-
-\- Email Notifications
-
-\- Cloud Backup
-
-\- AI Assistant Integration
-
-
-
-\---
-
-
-
-\# Development Philosophy
-
-
-
-GarageOS follows these principles:
-
-
-
-\- Modular Architecture
-
-\- Clean Code
-
-\- Readable Functions
-
-\- Documentation First
-
-\- Maintainability
-
-\- Automation
-
-\- Scalability
-
-
-
-\---
-
-
-
-\# Documentation
-
-
-
-Project documentation is available inside the \*\*docs/\*\* folder.
-
-
-
-\- Architecture
-
-\- Modules
-
-\- API
-
-\- Roadmap
-
-\- Changelog
-
-
-
-\---
-
-
-
-\# License
-
-
-
-This project is licensed under the MIT License.
-
-
-
-\---
-
-
-
-\# Author
-
-
-
-\*\*Kevin Carvajal\*\*
-
-
-
-Google Sheets Developer
-
-
-
-Google Apps Script Developer
-
-
-
-Automation Solutions
-
-
-
-Data Management Systems
-
-
-
-\---
-
-=======
 # GarageOS
 
-GarageOS is a modular automotive workshop management system built with Google Sheets and Google Apps Script.
+> A complete Automotive Repair Shop Management System built with Google Sheets and Google Apps Script.
 
-## Status
+GarageOS is a cloud-based management system designed for independent automotive repair shops. It combines spreadsheet automation, custom Apps Script development and interactive dashboards into a single solution without requiring a traditional database or server infrastructure.
 
-🚧 Under active development.
->>>>>>> 54b6e1b7200d678a589f9d1c812451da1615e697
+---
+
+## Features
+
+- Customer Management
+- Vehicle Management
+- Work Order Tracking
+- Payment Management
+- Mechanic Management
+- Business Dashboard with KPIs
+- Automated ID Generation
+- Data Validation
+- Dynamic Dropdowns
+- Vehicle Viewer Sidebar
+- Google Apps Script Automation
+
+---
+
+## Technologies
+
+- Google Sheets
+- Google Apps Script
+- JavaScript (ES6)
+- Google Workspace
+- Spreadsheet Automation
+
+---
+
+## Dashboard
+
+The dashboard provides business insights through real-time KPIs including:
+
+- Revenue Trend
+- Average Repair Cost
+- Average Labor Cost
+- Average Parts Cost
+- Outstanding Balance
+- Work Order Status
+- Payment Status
+- Vehicle Statistics
+
+---
+
+## Project Architecture
+
+```
+GarageOS
+│
+├── Dashboard
+├── Customers
+├── Vehicles
+├── Work Orders
+├── Payments
+├── Mechanics
+├── Validation Engine
+├── Auto Row Engine
+├── Sidebar UI
+├── Developer Center
+└── Shared Utilities
+```
+
+---
+
+## Highlights
+
+✔ Modular architecture
+
+✔ Reusable validation engine
+
+✔ Automatic record generation
+
+✔ Dynamic user interface
+
+✔ Business reporting
+
+✔ Spreadsheet automation
+
+✔ Maintainable codebase
+
+---
+
+## Purpose
+
+This project was developed as a portfolio application demonstrating advanced Google Sheets and Google Apps Script development, business automation and dashboard design.
+
+It showcases how Google Workspace can be used to build scalable business management systems for small and medium-sized companies.
+
+---
+
+## License
+
+This repository is provided for portfolio and demonstration purposes.
